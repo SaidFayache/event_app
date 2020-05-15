@@ -4,6 +4,7 @@ import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/plansModel.dart';
 import 'package:http/http.dart' as http;
 import 'planDetails.dart';
+import 'package:event_app/UI/MyRequests/requests.dart';
 class EventDetail extends StatefulWidget {
   final Event event;
   EventDetail({Key key, this.event}) : super(key: key);
@@ -75,8 +76,17 @@ class _EventDetailState extends State<EventDetail> {
       margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Row(
+            children: <Widget>[
+              IconButton(icon: Icon(Icons.description), onPressed:(){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => RequestPage()));
+              } )
+            ],
+          ),
           Container(
 
 
@@ -99,7 +109,7 @@ class _EventDetailState extends State<EventDetail> {
           ),
 
           Container(
-            margin: EdgeInsets.only(top: 40),
+            margin: EdgeInsets.only(top: 10),
             child: Row(
               children: <Widget>[
                 Container( margin: EdgeInsets.only(right: 10) ,child: Icon(Icons.date_range , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),
@@ -130,7 +140,7 @@ class _EventDetailState extends State<EventDetail> {
             ),
           ), // Text("End : "+ post.endTime.split("T")[0], style: TextStyle(fontSize: 20 ),),) ,
           Container(
-            margin: EdgeInsets.only(top: 30),
+            margin: EdgeInsets.only(top: 10),
             width: MediaQuery.of(context).size.width * 1,
             child: Center(
               child: Card(

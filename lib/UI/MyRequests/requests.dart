@@ -124,7 +124,7 @@ class _RequestPageState extends State<RequestPage> {
                     ),
                   ),
                   onTap: (){
-                    
+                    _deleteReq(req);
                   },
                 ),
 
@@ -146,6 +146,18 @@ class _RequestPageState extends State<RequestPage> {
         myReqs = myRequestsFromJson(response.body);
         reqList = myReqs.requests;
       });
+    });
+  }
+  void _deleteReq(RequestElement r)  {
+
+    http.delete("https://event-manager-red.herokuapp.com/api" + "/event/request",
+        headers: {"id": r.request.id}).then((http.Response response) {
+          print("deleted "+r.request.id);
+          print(response.body);
+          setState(() {
+            reqList.remove(r);
+          });
+
     });
   }
 }
