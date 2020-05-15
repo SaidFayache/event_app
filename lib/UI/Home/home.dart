@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: _getDrawer(),
       appBar: AppBar(
         backgroundColor: c1,
         title: isSearching? TextField(
@@ -135,4 +136,43 @@ class _HomePageState extends State<HomePage> {
       });
     });
   }
+
+ Widget _getDrawer(){
+    return Drawer(
+      // Add a ListView to the drawer. This ensures the user can scroll
+      // through the options in the drawer if there isn't enough vertical
+      // space to fit everything.
+      child: ListView(
+        // Important: Remove any padding from the ListView.
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Text('Drawer Header'),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+          ),
+          ListTile(
+            title: Text('Your Tickets'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>  YourPage()), //TODO change this
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Staff'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>  YourPage()), //TODO change this
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
 }
