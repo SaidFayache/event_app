@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/API/eventsModel.dart';
+import 'package:intl/intl.dart';
 import 'eventDetails.dart';
 
 class HomePage extends StatefulWidget {
@@ -36,17 +37,17 @@ class _HomePageState extends State<HomePage> {
           onChanged: (String txt){
             print(txt);
             if(txt!="")
-              {
-                homeScreenList=eventsList.where((event)=> event.name.toLowerCase().contains(txt.toLowerCase())).toList();
-                setState(() {
-
-                });
-              }
-            else
-              homeScreenList=eventsList;
+            {
+              homeScreenList=eventsList.where((event)=> event.name.toLowerCase().contains(txt.toLowerCase())).toList();
               setState(() {
 
               });
+            }
+            else
+              homeScreenList=eventsList;
+            setState(() {
+
+            });
 
 
 
@@ -54,13 +55,13 @@ class _HomePageState extends State<HomePage> {
         ):Text('Home'),
         actions: <Widget>[
           IconButton(
-          icon: Icon(Icons.search),
+            icon: Icon(Icons.search),
             onPressed: (){
-            setState(() {
-              isSearching= !isSearching;
-            });
+              setState(() {
+                isSearching= !isSearching;
+              });
             },
-      )
+          )
         ],
 
       ),
@@ -72,44 +73,80 @@ class _HomePageState extends State<HomePage> {
     return Container(
       child: ListView.builder(
         itemCount: homeScreenList.length,
-      itemBuilder: (BuildContext context, int index){
-        return _getCard(homeScreenList[index]);
+        itemBuilder: (BuildContext context, int index){
+          return _getCard(homeScreenList[index]);
 
-    },),
-      
+        },),
+
     );
   }
   Widget _getCard(Event e)
   {
+
+    double card_height = 220.0 ;
     return GestureDetector(
       child: Card(
         margin: EdgeInsets.all(15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(40))),
         child: Container(
-          height: 210,
+          height: card_height,
 
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: <Widget>[
               Container(
-                height: 100,
+                height: card_height,
 
-              decoration: BoxDecoration(
-                image: DecorationImage(image: AssetImage("assets/image1.png") ,fit: BoxFit.fitWidth, ),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(40),topRight: Radius.circular(40))
+                decoration: BoxDecoration(
+                    image: DecorationImage(image: Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().millisecondsSinceEpoch.toString()).image ,fit: BoxFit.fitWidth, ),
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all( Radius.circular(8.0))
 
+                ),
+                child: Container(),),
+              //Center(child: Text(e.name,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
+              Positioned(
+                bottom: 0.0,
+                left: 0,
+                right: 0,
+                child: Container(
+
+                  height: card_height*.5,
+                  decoration: BoxDecoration(
+
+                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8.0),bottomRight: Radius.circular(8.0)),
+                      gradient: LinearGradient(
+                          begin: Alignment(0.0, 2.0),
+                          end: Alignment(0.0, -2.0)
+                          , stops: [
+                        0.1,
+                        0.6,
+                        0.8,
+
+                      ], colors: [
+                        Colors.black.withOpacity(0.9),
+                        Colors.black.withOpacity(.6),
+                        Colors.black.withOpacity(.0)
+                      ])),
+
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                          padding: EdgeInsets.only(top:5,left: 5,bottom: 5),
+                          child: Text(e.name , style: TextStyle(fontSize: 25 , color: Colors.white , fontWeight: FontWeight.bold),)),
+                      Container(padding: EdgeInsets.only(left: 5,bottom: 5),
+                          child: Text("Location : "+e.location.toString(), style: TextStyle(fontSize: 18 , color: Colors.white , fontWeight: FontWeight.bold))),
+                    ],
+                  ),
+
+                ),
               ),
-              child: Container(),),
-              Center(child: Text(e.name,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
-              Container(
-                padding: EdgeInsets.only(top:5,left: 5,bottom: 5),
-                  child: Text("Starting Date : "+e.startDate.toString())),
-              Container(padding: EdgeInsets.only(left: 5,bottom: 5),
-                  child: Text("Ending Date : "+e.endDate.toString())),
-              Container(padding: EdgeInsets.only(left: 5,bottom: 5),
-                  child: Text("Location : "+e.location.toString())),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: _getDate(e.startDate),
+              )
+
             ],
 
           ),
@@ -118,10 +155,31 @@ class _HomePageState extends State<HomePage> {
       ),
       onTap:(){
         Navigator.push(
-          context, MaterialPageRoute(builder: (context) => EventDetail(event: e,)));
-        },
+            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,)));
+      },
     );
   }
+
+
+  Widget _getDate(DateTime dateTime){
+    final m = new DateFormat('MMM');
+    return Container(
+      child: Card(
+          child :  Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(dateTime.day.toString() , style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blue , fontSize: 25),),
+                Text(m.format(dateTime), style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blue),),
+              ],
+            ),),
+          )
+      ),
+    );
+
+  }
+
 
   void _getEvents()
   {
@@ -137,7 +195,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
- Widget _getDrawer(){
+
+
+
+
+Widget _getDrawer(){
     return Drawer(
       // Add a ListView to the drawer. This ensures the user can scroll
       // through the options in the drawer if there isn't enough vertical
@@ -152,6 +214,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blue,
             ),
           ),
+          /*
           ListTile(
             title: Text('Your Tickets'),
             onTap: () {
@@ -170,6 +233,8 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
+          */
+
         ],
       ),
     );
