@@ -3,12 +3,33 @@ import 'package:event_app/Const/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:event_app/UI/Signup/signup.dart';
 import 'Widgets/bezierContainer.dart';
+import 'package:event_app/API/userModel.dart';
+import 'package:event_app/API/loginModel.dart';
+import 'package:event_app/UI/Home/home.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  Future<SharedPreferences> _prefs=SharedPreferences.getInstance();
+  Future<String> _id;
+  Map<String,String> body;
+  User user;
+  String error;
+
+  @override
+  void initState(){
+
+    body=new Map();
+    user= new User();
+
+  }
   Widget _backButton() {
     return InkWell(
       onTap: () {
@@ -30,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _entryField(String title, {bool isPassword = false}) {
+  Widget _entryField(String title,String key, {bool isPassword = false}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -48,34 +69,52 @@ class _LoginPageState extends State<LoginPage> {
               decoration: InputDecoration(
                   border: InputBorder.none,
                   fillColor: Color(0xfff3f3f4),
-                  filled: true))
+                  filled: true),
+              onChanged: (String data) {
+                setState(() {
+                  body[key]=data;
+                });
+
+              }
+          )
         ],
       ),
     );
   }
 
   Widget _submitButton() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.symmetric(vertical: 15),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(5)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-                color: Colors.grey.shade200,
-                offset: Offset(2, 4),
-                blurRadius: 5,
-                spreadRadius: 2)
-          ],
-          gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [c1, c2])),
-      child: Text(
-        'Login',
-        style: TextStyle(fontSize: 20, color: Colors.white),
+    return GestureDetector(
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        padding: EdgeInsets.symmetric(vertical: 15),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                  color: Colors.grey.shade200,
+                  offset: Offset(2, 4),
+                  blurRadius: 5,
+                  spreadRadius: 2)
+            ],
+            gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [c1, c2])),
+        child: InkWell(
+          child: Text(
+            'Login',
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          ),
+//          onTap: (){
+//            Navigator.push(
+//                context, MaterialPageRoute(builder: (context) => HomePage()));
+//          },
+        )
       ),
+      onTap: (){
+        _sendLogin();
+      },
     );
   }
 
@@ -138,8 +177,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget _emailPasswordWidget() {
     return Column(
       children: <Widget>[
-        _entryField("Email id"),
-        _entryField("Password", isPassword: true),
+        _entryField("Email id","email"),
+        _entryField("Password","password", isPassword: true),
       ],
     );
   }
@@ -166,6 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(
                           height: 50,
                         ),
+                        error!= null ?  Text(error,style: TextStyle(color: Colors.red,fontSize: 20),) :Container() ,
                         _emailPasswordWidget(),
                         SizedBox(
                           height: 20,
@@ -201,6 +241,39 @@ class _LoginPageState extends State<LoginPage> {
             )
         )
     );
+  }
+
+  Future<void> _sendLogin() async
+  {
+    SharedPreferences.setMockInitialValues({});
+    final SharedPreferences prefs = await _prefs;
+    Login log=Login.fromJson(body);
+    String bod=loginToJson(log);
+    print(bod);
+    http.post("https://event-manager-red.herokuapp.com/api/"+"login",body: bod,headers: {
+      "Content-Type": "application/json"
+    }).then((http.Response response){
+
+      if(response.statusCode==200) {
+        print(response.body);
+        Map<String, dynamic> l = jsonDecode(response.body);
+        print(l["id"]);
+        _id=prefs.setString("id", l["id"]).then((bool success) {
+          return l["id"];
+
+        });
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+
+      }
+      else 
+        {
+          setState(() {
+            error="user not found";
+          });
+        }
+    });
+
   }
   }
 
