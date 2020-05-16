@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'eventDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:event_app/UI/Staff/staffEvents.dart';
+import 'package:event_app/UI/MyQR/myQR.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -219,11 +220,11 @@ Widget _getDrawer(){
           ),
 
           ListTile(
-            title: Text('Your Tickets'),
+            title: Text('My Tickets'),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>  RequestPage()), //TODO change this
+                MaterialPageRoute(builder: (context) =>  RequestPage()),
               );
             },
           ),
@@ -233,7 +234,17 @@ Widget _getDrawer(){
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>  StaffEventsPage()), //TODO change this
+                MaterialPageRoute(builder: (context) =>  StaffEventsPage()),
+              );
+            },
+          ),
+          ListTile(
+
+            title: Text('My QR Code'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>  MyQrPage()),
               );
             },
           ),

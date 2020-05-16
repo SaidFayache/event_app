@@ -3,6 +3,9 @@ import 'package:event_app/Const/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/API/myRequestsModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:typed_data';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class RequestPage extends StatefulWidget {
   @override
@@ -10,6 +13,7 @@ class RequestPage extends StatefulWidget {
 }
 
 class _RequestPageState extends State<RequestPage> {
+  Uint8List bytes = Uint8List(200);
   MyRequests myReqs;
   List<RequestElement> reqList=new List();
 
@@ -101,13 +105,15 @@ class _RequestPageState extends State<RequestPage> {
                   ]
               ),
             ),
-            Container(
-              margin: EdgeInsets.all(10),
-              child: Center(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children:<Widget>[
+                Container(
+                margin: EdgeInsets.all(10),
                 child: GestureDetector(
                   child: Container(
                     height: 50,
-                    width: 200,
+                    width: 180,
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       color: Colors.red,
@@ -118,7 +124,7 @@ class _RequestPageState extends State<RequestPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Icon(Icons.delete,color: Colors.white,),
-                          Text(" Delete Request",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 22),)
+                          Text("Delete Request ",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 18),)
                         ],
                       ),
                     ),
@@ -127,8 +133,36 @@ class _RequestPageState extends State<RequestPage> {
                     _deleteReq(req);
                   },
                 ),
-
               ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  child: GestureDetector(
+                    child: Container(
+                      height: 50,
+                      width: 150,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          color: c1,
+                          borderRadius: BorderRadius.all(Radius.circular(20))
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.comment,color: Colors.white,),
+                            Text(" Ticket Code",style: TextStyle(color: Colors.white,fontSize: 18),)
+                          ],
+                        ),
+                      ),
+                    ),
+                    onTap: (){
+                      _generateBarCode(req.request.id);
+                      _createPopUpQr(context);
+
+                    },
+                  ),
+                ),
+                ]
             )
           ],
         ),
@@ -159,5 +193,38 @@ class _RequestPageState extends State<RequestPage> {
           });
 
     });
+  }
+
+  Future<void> _createPopUpQr(BuildContext context)
+  {
+    return showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          title: Text("Your generated Code"),
+          content: SizedBox(
+            width: 200,
+            height: 200,
+            child: Image.memory(bytes),
+          ),
+          actions: <Widget>[
+            MaterialButton(
+              child: Text("Cancel"),
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      },
+
+    );
+
+  }
+
+  Future _generateBarCode(String id) async {
+
+    Uint8List result = await scanner.generateBarCode(id);
+    this.setState(() => this.bytes = result);
   }
 }
