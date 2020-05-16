@@ -36,50 +36,38 @@ class Event {
   String id;
   String name;
   String admin;
-  DateTime startDate;
-  DateTime endDate;
   String description;
   String location;
-  DateTime createdAt;
-  DateTime updatedAt;
-  int v;
+  DateTime startDate;
+  DateTime endDate;
 
   Event({
     this.id,
     this.name,
     this.admin,
-    this.startDate,
-    this.endDate,
     this.description,
     this.location,
-    this.createdAt,
-    this.updatedAt,
-    this.v,
+    this.startDate,
+    this.endDate,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(
-    id: json["_id"],
+    id: json["id"],
     name: json["name"],
     admin: json["admin"],
-    startDate: DateTime.parse(json["start_date"]),
-    endDate: DateTime.parse(json["end_date"]),
     description: json["description"],
     location: json["location"],
-    createdAt: DateTime.parse(json["createdAt"]),
-    updatedAt: DateTime.parse(json["updatedAt"]),
-    v: json["__v"],
+    startDate: DateTime.parse(json["start_date"]),
+    endDate: DateTime.parse(json["end_date"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "_id": id,
+    "id": id,
     "name": name,
     "admin": admin,
-    "start_date": startDate.toIso8601String(),
-    "end_date": endDate.toIso8601String(),
     "description": description,
     "location": location,
-    "createdAt": createdAt.toIso8601String(),
-    "updatedAt": updatedAt.toIso8601String(),
-    "__v": v,
+    "start_date": startDate.toIso8601String(),
+    "end_date": endDate.toIso8601String(),
   };
 }

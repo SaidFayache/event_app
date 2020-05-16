@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:event_app/API/eventsModel.dart';
 import 'package:intl/intl.dart';
 import 'eventDetails.dart';
+import 'package:event_app/UI/MyRequests/requests.dart';
+import 'package:event_app/UI/Staff/staffEvents.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -214,26 +217,27 @@ Widget _getDrawer(){
               color: Colors.blue,
             ),
           ),
-          /*
+
           ListTile(
             title: Text('Your Tickets'),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>  YourPage()), //TODO change this
+                MaterialPageRoute(builder: (context) =>  RequestPage()), //TODO change this
               );
             },
           ),
           ListTile(
+
             title: Text('Staff'),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>  YourPage()), //TODO change this
+                MaterialPageRoute(builder: (context) =>  StaffEventsPage()), //TODO change this
               );
             },
           ),
-          */
+
 
         ],
       ),
