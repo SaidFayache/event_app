@@ -3,6 +3,7 @@ import 'package:event_app/Const/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_app/API/staffEventsModel.dart';
+import 'staffEventCounting.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -72,6 +73,29 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
                   }
                 });
 
+              } ,
+            ),
+          ),
+          Center(
+            child: GestureDetector(
+              child: Container(
+                width: 200,
+                height: 50,
+                decoration: BoxDecoration(
+                    color: c1,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(10))
+                ),
+                child: Center(
+                  child: Text("Countings"),
+
+                ),
+              ),
+              onTap:(){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  EventCountingPage(event: e,)),
+                );
               } ,
             ),
           ),
