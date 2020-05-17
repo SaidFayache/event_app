@@ -47,47 +47,19 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
     return GestureDetector(
       child: Container(
         child: Card(
-          margin: EdgeInsets.all(10),
-          child: Column(
+          child: Row(
             children: <Widget>[
+              Container(height: 80,width: 5,color: Colors.deepOrange,),
+              SizedBox(width: 30,),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10),
                 child: Center(
                     child: Text(
-                      "Event : " +e.name,
+                      e.name,
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
                     )),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-                child: Row(
-                    children :<Widget>[
-                      Text(
-                        "Location : ",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                      Text(
-                        e.location,
-                        style: TextStyle( fontSize: 20),
-                      ),
-                    ]
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-                child: Row(
-                    children :<Widget>[
-                      Text(
-                        "Start Date : ",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                      Text(
-                        e.startDate.toString(),
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ]
-                ),
-              )
+
 
             ],
           ),
