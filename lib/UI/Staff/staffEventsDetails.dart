@@ -17,6 +17,7 @@ class StaffEventsDetailsPage extends StatefulWidget {
 
 class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
   _StaffEventsDetailsPageState({this.e});
+  String val;
   List<String> requestState ;
   int status;
   Requests requests;
@@ -38,28 +39,6 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
       ),
       body: _getBody(),
     );
-//    return Scaffold(
-//      appBar: AppBar(
-//        title: Text('Qrcode Scanner Example'),
-//      ),
-//      body: Center(
-//        child: Column(
-//          mainAxisAlignment: MainAxisAlignment.end,
-//          crossAxisAlignment: CrossAxisAlignment.center,
-//          children: <Widget>[
-//            SizedBox(
-//              width: 200,
-//              height: 200,
-//              child: Image.memory(bytes),
-//            ),
-//
-//            RaisedButton(onPressed: _scan, child: Text("Scan")),
-//            RaisedButton(onPressed: _scanPhoto, child: Text("Scan Photo")),
-//            RaisedButton(onPressed: _generateBarCode, child: Text("Generate Barcode")),
-//          ],
-//        ),
-//      ),
-//    );
   }
   Widget _getBody()
   {
@@ -87,8 +66,9 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
                 _scan().then((val){
                   if(barcode !='')
                   {
-                    RequestElement r=requests.requests.where((req)=> req.request.id==barcode).toList()[0];
-                  _createPopUp(context,r);
+                    print("barcode found :"+barcode);
+                    RequestElement r=requests.requests.where((req)=> req.request.id.compareTo(barcode)==0).toList()[0];
+                    _createPopUp(context,r);
                   }
                 });
 
@@ -100,33 +80,6 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
       ),
     );
   }
-
-  Future _scan() async {
-    String barcode = await scanner.scan();
-    setState(() => this.barcode = barcode);
-
-  }
-
-  Future _scanPhoto() async {
-    String barcode = await scanner.scanPhoto();
-    setState(() => this.barcode = barcode);
-  }
-
-  Future _generateBarCode() async {
-    Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
-    this.setState(() => this.bytes = result);
-  }
-
-  void _getRequests(String eventId)
-  {
-    http.get("https://event-manager-red.herokuapp.com/api/" + "user/request",
-        headers: {"event": eventId}).then((http.Response response) {
-      setState(() {
-        requests=requestsFromJson(response.body);
-      });
-    });
-  }
-
   Future<void> _createPopUp(BuildContext context,RequestElement r)
   {
     return showDialog(
@@ -138,7 +91,7 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
             child: Column(
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.all(5),
+                    margin: EdgeInsets.all(5),
                     child: Text("Ticket's owner : "+r.user.name)
                 ),
                 Container(
@@ -146,11 +99,11 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
                     child: Text("Ticket's Price : "+r.plan.cost.toString() +" TND")
                 ),
                 Container(
-                    margin: EdgeInsets.only(bottom: 5,left: 5),
-                    child: Text("Ticket's Status : "+requestState[r.request.state]),
+                  margin: EdgeInsets.only(bottom: 5,left: 5),
+                  child: Text("Ticket's Status : "+requestState[r.request.state]),
                 ),
                 Container(
-                   child: DropdownButton<String>(
+                    child: DropdownButton<String>(
                       value: requestState[status],
                       icon: Icon(Icons.arrow_downward),
                       iconSize: 15,
@@ -161,8 +114,9 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
                       ),
                       onChanged: (String newValue) {
                         setState(() {
-                          status = requestState.indexOf(newValue);
+                          status=requestState.indexOf(newValue);
                         });
+
                       },
                       items: requestState
                           .map<DropdownMenuItem<String>>((String value) {
@@ -186,7 +140,8 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
             MaterialButton(
               child: Text("Submit"),
               onPressed: (){
-
+                _updateRequest(r.request.id);
+                Navigator.of(context).pop();
               },
             )
           ],
@@ -194,6 +149,55 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
       },
 
     );
+  }
+
+  Future _scan() async {
+    String barcode = await scanner.scan();
+    setState(() => this.barcode = barcode);
+
+  }
+
+  Future _scanPhoto() async {
+    String barcode = await scanner.scanPhoto();
+    setState(() => this.barcode = barcode);
+  }
+
+  Future _generateBarCode() async {
+    Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
+    this.setState(() => this.bytes = result);
+  }
+
+  void _getRequests(String eventId)
+  {
+    http.get("https://event-manager-red.herokuapp.com/api/" + "/event/request",
+        headers: {"event": eventId}).then((http.Response response) {
+          print(response.body);
+      setState(() {
+        requests=requestsFromJson(response.body);
+      });
+    });
+  }
+  void _updateRequest(String reqId,)
+  {
+    String body = '{"id":"'+reqId+'","state":"'+status.toString()+'"}';
+    http.put("https://event-manager-red.herokuapp.com/api/" + "/event/request",
+        headers: {
+          "Content-Type": "application/json"
+        },body: body).then((http.Response response) {
+      print(response.body);
+      setState(() {
+        _getRequests(e.id);
+      });
+    });
+  }
+  void change(String n)
+  {
+    print(n);
+
+    setState(() {
+      this.val=n;
+    });
+    print(val);
 
   }
 }
