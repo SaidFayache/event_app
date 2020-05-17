@@ -9,6 +9,8 @@ import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ticket_pass_package/ticket_pass.dart';
 import 'package:intl/intl.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 class RequestPage extends StatefulWidget {
   @override
@@ -184,7 +186,7 @@ class _RequestPageState extends State<RequestPage> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
 
-    http.get("https://event-manager-red.herokuapp.com/api/" + "user/request",
+    http.get(baseUrl + "api/user/request",
         headers: {"user": i}).then((http.Response response) {
       setState(() {
         myReqs = myRequestsFromJson(response.body);
@@ -194,7 +196,7 @@ class _RequestPageState extends State<RequestPage> {
   }
   void _deleteReq(RequestElement r)  {
 
-    http.delete("https://event-manager-red.herokuapp.com/api" + "/event/request",
+    http.delete(baseUrl + "api/event/request",
         headers: {"id": r.request.id}).then((http.Response response) {
           print("deleted "+r.request.id);
           print(response.body);

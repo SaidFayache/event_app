@@ -10,6 +10,7 @@ import 'package:timeline_list/timeline_model.dart';
 import 'planDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:intl/intl.dart';
+import 'package:event_app/Const/strings.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -298,7 +299,7 @@ class _EventDetailState extends State<EventDetail> {
       'event': e.id,
 
     };
-    http.get("https://event-manager-red.herokuapp.com/api/"+"plan",headers:headers).then((http.Response response){
+    http.get(baseUrl+"api/plan",headers:headers).then((http.Response response){
 
       
       setState(() {

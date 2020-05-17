@@ -7,6 +7,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventCountingsModel.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 
 class EventCountingPage extends StatefulWidget {
@@ -116,7 +118,7 @@ class _EventCountingPageState extends State<EventCountingPage> {
 
   void _getCountings(String eventId)
   {
-    http.get("https://event-manager-red.herokuapp.com/api/" + "/event/presence",
+    http.get(baseUrl + "api/event/presence",
         headers: {"event": eventId}).then((http.Response response) {
       print(response.body);
       setState(() {

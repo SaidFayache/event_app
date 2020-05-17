@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/userModel.dart';
 import 'package:http/http.dart' as http;
+import 'package:event_app/Const/strings.dart';
+
 
 
 class SignupPage extends StatefulWidget {
@@ -236,7 +238,7 @@ class _SignupPageState extends State<SignupPage> {
      String bod=userToJson(user);
      print(bod);
 
-    http.post("https://event-manager-red.herokuapp.com/api/"+"users",body: bod, headers: {
+    http.post(baseUrl+"api/users",body: bod, headers: {
       "Content-Type": "application/json"
     }).then((http.Response response){
       print(body);

@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_app/API/staffEventsModel.dart';
 import 'staffEventsDetails.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 
 class StaffEventsPage extends StatefulWidget {
@@ -79,7 +81,7 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
 
-     await http.get("https://event-manager-red.herokuapp.com/api/" + "staff/events",
+     await http.get(baseUrl + "api/staff/events",
         headers: {"user": i}).then((http.Response response) {
           if(response.statusCode==200)
       setState(() {

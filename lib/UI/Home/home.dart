@@ -9,6 +9,8 @@ import 'eventDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:event_app/UI/Staff/staffEvents.dart';
 import 'package:event_app/UI/MyQR/myQR.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 
 class HomePage extends StatefulWidget {
@@ -164,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                   height: card_height,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 
@@ -251,7 +253,7 @@ class _HomePageState extends State<HomePage> {
 
   void _getEvents()
   {
-    http.get("https://event-manager-red.herokuapp.com/api/"+"events").then((http.Response response){
+    http.get(baseUrl+"api/events").then((http.Response response){
 
       print(response.body) ;
       setState(() {

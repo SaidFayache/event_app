@@ -8,6 +8,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventRequests.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 class StaffEventsDetailsPage extends StatefulWidget {
   final Event event;
@@ -186,14 +188,9 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
     setState(() => this.barcode = barcode);
   }
 
-  Future _generateBarCode() async {
-    Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
-    this.setState(() => this.bytes = result);
-  }
-
   void _getRequests(String eventId)
   {
-    http.get("https://event-manager-red.herokuapp.com/api/" + "/event/request",
+    http.get(baseUrl + "api/event/request",
         headers: {"event": eventId}).then((http.Response response) {
           print(response.body);
       setState(() {
@@ -204,7 +201,7 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
   void _updateRequest(String reqId,)
   {
     String body = '{"id":"'+reqId+'","state":"'+status.toString()+'"}';
-    http.put("https://event-manager-red.herokuapp.com/api/" + "/event/request",
+    http.put(baseUrl + "api/event/request",
         headers: {
           "Content-Type": "application/json"
         },body: body).then((http.Response response) {

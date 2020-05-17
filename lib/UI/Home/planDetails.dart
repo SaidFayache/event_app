@@ -6,6 +6,8 @@ import 'package:event_app/API/planRequestModel.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:event_app/Const/strings.dart';
+
 
 class PlanDetail extends StatefulWidget {
   final Plan plan;
@@ -86,7 +88,7 @@ class _PlanDetailState extends State<PlanDetail> {
     bod["plan"]=p.id;
     PlanReq pl = PlanReq.fromJson(bod);
     String body=planReqToJson(pl);
-    http.post("https://event-manager-red.herokuapp.com/api/"+"/event/request",body: body,headers: {
+    http.post(baseUrl+"api/event/request",body: body,headers: {
       "Content-Type": "application/json"
     }).then((http.Response response){
       print(response.body);

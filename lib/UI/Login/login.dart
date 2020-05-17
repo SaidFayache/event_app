@@ -10,6 +10,8 @@ import 'package:event_app/UI/Home/home.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:event_app/Const/strings.dart';
+
 
 
 class LoginPage extends StatefulWidget {
@@ -249,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
     Login log=Login.fromJson(body);
     String bod=loginToJson(log);
     print(bod);
-    http.post("https://event-manager-red.herokuapp.com/api/"+"login",body: bod,headers: {
+    http.post(baseUrl+"api/login",body: bod,headers: {
       "Content-Type": "application/json"
     }).then((http.Response response) async {
 
