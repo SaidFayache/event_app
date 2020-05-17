@@ -17,11 +17,11 @@ class EventCountingPage extends StatefulWidget {
 }
 
 class _EventCountingPageState extends State<EventCountingPage> {
-  List<MyItem> _items;
+  List<MyItem> _items = new List();
   _EventCountingPageState({this.e});
   Event e;
   Countings ctgs;
-  List<Counting> countingList;
+  List<Counting> countingList = new List();
   @override
   void initState() {
     _items=new List();

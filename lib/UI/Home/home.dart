@@ -74,9 +74,7 @@ class _HomePageState extends State<HomePage> {
                 centerTitle: true,
                 background: Container(
                     decoration: new BoxDecoration(
-                        image: DecorationImage(
-                            image:  AssetImage("assets/image1.png"),
-                            fit: BoxFit.cover),
+
                         borderRadius: new BorderRadius.all(
                             new Radius.circular(20.0))),
                     child: Container(child:
@@ -160,16 +158,19 @@ class _HomePageState extends State<HomePage> {
 
           child: Stack(
             children: <Widget>[
-              Container(
-                height: card_height,
+              Hero(
+                tag: "Image"+e.id,
+                child: Container(
+                  height: card_height,
 
-                decoration: BoxDecoration(
-                    image: DecorationImage(image: Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().millisecondsSinceEpoch.toString()).image ,fit: BoxFit.fitWidth, ),
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.all( Radius.circular(8.0))
+                  decoration: BoxDecoration(
+                      image: DecorationImage(image: Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image ,fit: BoxFit.fitWidth, ),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all( Radius.circular(8.0))
 
-                ),
-                child: Container(),),
+                  ),
+                  child: Container(),),
+              ),
               //Center(child: Text(e.name,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
               Positioned(
                 bottom: 0.0,

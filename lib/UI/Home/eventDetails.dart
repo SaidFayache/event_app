@@ -1,10 +1,16 @@
+import 'package:event_app/API/TimeLine/timeline.dart';
+import 'package:event_app/Const/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/API/eventsModel.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/plansModel.dart';
 import 'package:http/http.dart' as http;
+import 'package:timeline_list/timeline.dart';
+import 'package:timeline_list/timeline_model.dart';
 import 'planDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
+import 'package:intl/intl.dart';
+
 class EventDetail extends StatefulWidget {
   final Event event;
   EventDetail({Key key, this.event}) : super(key: key);
@@ -19,13 +25,15 @@ class _EventDetailState extends State<EventDetail> {
   Event e;
   Plans plans;
   List<Plan> plansList;
-  
-
+  List<Timeslot> timeslots = new List();
+  final m = new DateFormat('MMMEd');
+  final d = new DateFormat('jm');
 
   @override
   void initState() {
     super.initState();
     plansList=new List();
+    _loadTimeSlots();
     _loadPlans();
   }
   
@@ -51,15 +59,19 @@ class _EventDetailState extends State<EventDetail> {
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,
-                    title: Container(),
-                    background: Container(
-                          decoration: new BoxDecoration(
-                              image: DecorationImage(
-                                  image:  AssetImage("assets/image1.png"),
-                                  fit: BoxFit.cover),
-                              borderRadius: new BorderRadius.all(
-                                  new Radius.circular(20.0))),
-                          child: Container()),
+                    title: Container(
+                    ),
+                    background: Hero(
+                      tag: "Image"+e.id,
+                      child: Container(
+                            decoration: new BoxDecoration(
+                                image: DecorationImage(
+                                    image:  Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image,
+                                    fit: BoxFit.cover),
+                                borderRadius: new BorderRadius.all(
+                                    new Radius.circular(20.0))),
+                            child: Container()),
+                    ),
                     ),
               ),
             ];
@@ -70,153 +82,145 @@ class _EventDetailState extends State<EventDetail> {
 
     );
   }
-  Widget getBody() {
+  Widget _getDate(DateTime dateTime){
+    final m = new DateFormat('MMM');
     return Container(
-      //height: MediaQuery.of(context).size.height,
-      margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-      color: Colors.white,
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
+      child: Card(
+          child :  Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(m.format(dateTime), style: TextStyle(color: Colors.blue,fontSize: 40),),
+                Text(dateTime.day.toString() , style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blueGrey , fontSize: 55),),
+              ],
+            ),),
+          )
+      ),
+    );
+
+  }
+
+  Widget getBody() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Container(
+          //height: MediaQuery.of(context).size.height,
+          margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+          color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              IconButton(icon: Icon(Icons.description), onPressed:(){
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => RequestPage()));
-              } )
-            ],
-          ),
-          Container(
+              SizedBox(height: 40,),
+              Row(
+                children: <Widget>[
+                  _getDate(e.startDate),
+                  SizedBox(width: 20,),
+                  Container(
 
 
-              child: Row(children: <Widget>[
-                Text(
-                  "Title : ",
-                  style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.bold,
-                      color: Color.lerp(Colors.white, Colors.black, 0.65)),
-                ), Text(
-                    e.name,
-                    style: TextStyle(
-                        fontSize: 35,
-                        fontWeight: FontWeight.bold,
-                        color: Color.lerp(Colors.white, Colors.black, 0.65)),
+                      child: Column(
+
+
+                        children: <Widget>[
+                          Text(
+                             e.name,
+                             style: TextStyle(
+                                 fontSize: 45,
+                                 fontWeight: FontWeight.bold,
+                                 color: Color.lerp(Colors.white, Colors.black, 0.65)),
+                           ),
+                          SizedBox(height: 15,),
+                          Text(
+                            "Hosted by "+e.admin,
+                            style: TextStyle(
+
+                                fontSize: 19,
+                                color: Colors.grey),
+                          )
+                        ],
+                      )
                   ),
+                ],
+              ),
 
-              ],)
-          ),
-
-          Container(
-            margin: EdgeInsets.only(top: 10),
-            child: Row(
-              children: <Widget>[
-                Container( margin: EdgeInsets.only(right: 10) ,child: Icon(Icons.date_range , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),
-                Text(
-                  "Start : ",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  e.startDate.toString(),
-                  style: TextStyle(fontSize: 20),
-                )
-              ],
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 10),
-            child: Row(
-              children: <Widget>[
-                Container(margin: EdgeInsets.only(right: 10) , child: Icon(Icons.check_circle , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),                Text(
-                  "End : ",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  e.endDate.toString(),
-                  style: TextStyle(fontSize: 20),
-                )
-              ],
-            ),
-          ), // Text("End : "+ post.endTime.split("T")[0], style: TextStyle(fontSize: 20 ),),) ,
-          Container(
-            margin: EdgeInsets.only(top: 10),
-            width: MediaQuery.of(context).size.width * 1,
-            child: Center(
-              child: Card(
-                elevation: 3,
+              SizedBox(height: 40,),
+              Container(
+                margin: EdgeInsets.only(top: 10),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          "Location",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 19,
-                              color: Colors.lightBlue),
-                        ),
-                        Text(
-                          e.location.toString(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 19,
-                              color: Colors.grey),
-                        )
-                      ],
+                    Container( margin: EdgeInsets.only(right: 10) ,child: Icon(Icons.date_range , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),
+                    Text(
+                      "Start : ",
+                      style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(
-                      width: 3,
-                      child: Container(
-                        color: Colors.grey,
-                        height: 80,
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          "Organizer",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 19,
-                              color: Colors.lightBlue),
-                        ),
-                        Text(
-                          e.admin,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 19,
-                              color: Colors.grey),
-                        )
-                      ],
+                    Text(
+                      m.format(e.startDate) +" at "+ d.format(e.startDate),
+                      style: TextStyle(fontSize: 20),
                     )
                   ],
                 ),
               ),
-            ),
+              Container(
+                margin: EdgeInsets.only(top: 10),
+                child: Row(
+                  children: <Widget>[
+                    Container(margin: EdgeInsets.only(right: 10) , child: Icon(Icons.check_circle , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),                Text(
+                      "End : ",
+                      style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      m.format(e.endDate)+" at "+ d.format(e.endDate),
+                      style: TextStyle(fontSize: 20),
+                    )
+                  ],
+                ),
+              ), // Text("End : "+ post.endTime.split("T")[0], style: TextStyle(fontSize: 20 ),),) ,
+              Container(
+                margin: EdgeInsets.only(top: 10),
+                child: Row(
+                  children: <Widget>[
+                    Container(margin: EdgeInsets.only(right: 10) , child: Icon(Icons.location_on , color: Color.lerp(Colors.indigoAccent, Colors.black, 0.5 , ),size: 30,)),                Text(
+                      "",
+                      style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      e.location,
+                      style: TextStyle(fontSize: 20),
+                    )
+                  ],
+                ),
+              ), // Text("End : "+ post.endTime.split("T")[0], style: TextStyle(fontSize: 20 ),),) ,
+              Container(
+                margin: EdgeInsets.only(top: 30),
+                child: Text(
+                  "Description",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 20),
+                child: Text(e.description , style: TextStyle(fontSize: 20),),
+              ),
+              _getPlans(),
+              Container(
+                margin: EdgeInsets.only(top: 30),
+                child: Text(
+                  "TimeLine",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+              ),
+              _getTimeLine()
+            ],
           ),
-          Container(
-            margin: EdgeInsets.only(top: 30),
-            child: Text(
-              "Description",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 20),
-            child: Text(e.description , style: TextStyle(fontSize: 20),),
-          ),
-          _getPlans(),
-        ],
+        ),
       ),
     );
   }
   
-  Widget _getPlanCard(Plan p)
-  {
+  Widget _getPlanCard(Plan p) {
     return GestureDetector(
       child: Container(
         margin: EdgeInsets.only(left: 10,right: 10),
@@ -224,9 +228,9 @@ class _EventDetailState extends State<EventDetail> {
         width: 125,
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderRadius: BorderRadius.all(Radius.circular(15)),
           color: Colors.green,
-          gradient: LinearGradient(colors: [c1,Colors.white],
+          gradient: LinearGradient(colors: [colors[p.color],Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight)
         ),
@@ -247,9 +251,8 @@ class _EventDetailState extends State<EventDetail> {
     );
   }
 
-  Widget _getPlans()
-  {
-  return Container(
+  Widget _getPlans() {
+    return Container(
     width: MediaQuery.of(context).size.width,
     height: 270,
     margin: EdgeInsets.only(top: 10),
@@ -306,4 +309,81 @@ class _EventDetailState extends State<EventDetail> {
       });
     });
   }
+
+  _loadTimeSlots(){
+    http.get(baseUrl+"api/event/timeslot",headers: {
+      "event":e.id
+    }).then((http.Response response){
+      print(response.body);
+      timeslots =  timeSlotsFromJson(response.body).timeslots;
+      timeslots.sort((Timeslot a, Timeslot b) => a.startDate.compareTo(b.startDate) );
+
+      setState(() {
+
+      });
+    });
+  }
+
+  Widget _getTimeLine(){
+    double width = 300 ;
+
+    List<TimelineModel> temp = new List();
+
+
+    int day = 0;
+    int month =0 ;
+
+    if(timeslots.isNotEmpty) timeslots.forEach((t){
+
+      if(t.startDate.day!=day||t.startDate.month!=month){
+
+        day = t.startDate.day ;
+        month = t.startDate.month ;
+        temp.add(
+            (TimelineModel(Card(
+              child: Container(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: [Colors.blue, Colors.blueGrey])),
+                  width: width,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(m.format(t.startDate) , style: TextStyle(fontSize: 22 , fontWeight: FontWeight.bold ,color: Colors.white),),
+                  )
+
+              ),
+            ),
+                position: TimelineItemPosition.left,
+                iconBackground: Colors.blue,
+                icon: Icon(Icons.stars))
+            ));
+      }
+      temp.add(TimelineModel(Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: width,
+            child: Column(
+              children: <Widget>[
+                Text(t.title , style: TextStyle(fontSize: 23 ,fontWeight: FontWeight.bold),),
+                Text(t.location , style: TextStyle(fontSize: 18 ,fontWeight: FontWeight.bold),),
+                Text(d.format(t.startDate) +" to " +d.format(t.endDate), style: TextStyle(fontSize: 18 ,fontWeight: FontWeight.bold),),
+              ],
+            ),
+          ),
+        ),
+      ),
+          position: TimelineItemPosition.right,
+          iconBackground: Colors.purpleAccent,
+          icon: Icon(Icons.blur_circular)));
+    });
+
+    return Timeline(children: temp, position: TimelinePosition.Center ,shrinkWrap: true,);
+
+
+  }
+
+
 }
