@@ -14,6 +14,13 @@ class MyQrPage extends StatefulWidget {
 
 class _MyQrPageState extends State<MyQrPage> {
   Uint8List bytes = Uint8List(200);
+  String username = "";
+
+  @override
+  void initState() {
+    _generateBarCode();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,23 +34,24 @@ class _MyQrPageState extends State<MyQrPage> {
 
   Widget _getBody() {
     return Center(
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              width: 200,
-              height: 200,
-              child: Image.memory(bytes),
-            ),
-            Container(
-              margin: EdgeInsets.all(25),
-              child: RaisedButton(
-                onPressed: _generateBarCode,
-                child: Text("Generate My QR Code"),
-                color: c1,
+      child: Card(
+        elevation: 12,
+        child: Container(
+          height: MediaQuery.of(context).size.height*0.7,
+          width: MediaQuery.of(context).size.width*0.9,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Text(username,style: TextStyle(fontSize: 40),),
+                  SizedBox(height: 50,),
+                  Image.memory(bytes)
+                ],
               ),
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -52,6 +60,7 @@ class _MyQrPageState extends State<MyQrPage> {
   Future _generateBarCode() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
+    username = pref.getString("name");
     Uint8List result = await scanner.generateBarCode(i);
     this.setState(() => this.bytes = result);
   }

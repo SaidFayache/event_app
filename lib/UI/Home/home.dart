@@ -1,8 +1,10 @@
+import 'package:event_app/UI/Login/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/API/eventsModel.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'eventDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:event_app/UI/Staff/staffEvents.dart';
@@ -28,48 +30,109 @@ class _HomePageState extends State<HomePage> {
 
   }
   bool isSearching=false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _getDrawer(),
+
       appBar: AppBar(
+        elevation: 0.0,
         backgroundColor: c1,
-        title: isSearching? TextField(
-          decoration: InputDecoration(hintText: "Search an event here",
-            fillColor: Colors.white,focusColor: Colors.white,),
-          cursorColor: Colors.white,
-          onChanged: (String txt){
-            print(txt);
-            if(txt!="")
-            {
-              homeScreenList=eventsList.where((event)=> event.name.toLowerCase().contains(txt.toLowerCase())).toList();
-              setState(() {
-
-              });
-            }
-            else
-              homeScreenList=eventsList;
-            setState(() {
-
-            });
-
-
-
-          },
-        ):Text('Home'),
+        title: Text('Home') ,
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.blur_linear),
             onPressed: (){
-              setState(() {
-                isSearching= !isSearching;
-              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>  MyQrPage()),
+              );
             },
           )
         ],
 
       ),
-      body: _getBody(),
+      body: NestedScrollView(
+        scrollDirection: Axis.vertical,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverAppBar(
+              leading: Container(),
+              backgroundColor: c1,
+              elevation: 6,
+              forceElevated: true,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(30),
+                ),
+              ),
+              expandedHeight: 300.0,
+              floating: true,
+              pinned: false,
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                background: Container(
+                    decoration: new BoxDecoration(
+                        image: DecorationImage(
+                            image:  AssetImage("assets/image1.png"),
+                            fit: BoxFit.cover),
+                        borderRadius: new BorderRadius.all(
+                            new Radius.circular(20.0))),
+                    child: Container(child:
+                      Stack(
+                        children: <Widget>[
+                          Container(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 20),
+                              child: Text("Find amazing events Happening around you",style: TextStyle(fontSize: 50 , fontWeight: FontWeight.w600,color: Colors.white),),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 10,
+                            left: 20,
+                            right: 20,
+                            child:Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10
+                              ),
+                              decoration: new BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: new BorderRadius.all(
+                                      new Radius.circular(20.0))),
+                              child: TextField(
+                                decoration: InputDecoration(hintText: "Search",
+                                  prefixIcon: Icon(Icons.search , color: c1,),
+                                  fillColor: Colors.white,focusColor: Colors.white,),
+                                cursorColor: Colors.white,
+                                onChanged: (String txt){
+                                  print(txt);
+                                  if(txt!="")
+                                  {
+                                    homeScreenList=eventsList.where((event)=> event.name.toLowerCase().contains(txt.toLowerCase())).toList();
+                                    setState(() {
+
+                                    });
+                                  }
+                                  else
+                                    homeScreenList=eventsList;
+                                  setState(() {
+
+                                  });
+
+
+
+                                },
+                              ),) ,
+                          ),
+                        ],
+                      ),)),
+              ),
+            ),
+          ];
+        },
+        body: _getBody(),
+      ),
     );
   }
   Widget _getBody()
@@ -210,10 +273,17 @@ Widget _getDrawer(){
       // space to fit everything.
       child: ListView(
         // Important: Remove any padding from the ListView.
+
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Text('Drawer Header'),
+
+            child: Column(
+              children: <Widget>[
+                Text("User Name"),
+                RaisedButton(child: Text("Logout"),onPressed: _logout,)
+              ],
+            ),
             decoration: BoxDecoration(
               color: Colors.blue,
             ),
@@ -252,7 +322,16 @@ Widget _getDrawer(){
 
         ],
       ),
+
     );
   }
 
+
+  void _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('id');
+    Route route = MaterialPageRoute(builder: (context) => WelcomePage());
+    Navigator.pushReplacement(context, route);
+
+  }
 }

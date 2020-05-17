@@ -1,3 +1,4 @@
+import 'package:event_app/API/login/loginResponse.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,7 +19,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   Future<SharedPreferences> _prefs=SharedPreferences.getInstance();
-  Future<String> _id;
   Map<String,String> body;
   User user;
   String error;
@@ -245,26 +245,23 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _sendLogin() async
   {
-    SharedPreferences.setMockInitialValues({});
     final SharedPreferences prefs = await _prefs;
     Login log=Login.fromJson(body);
     String bod=loginToJson(log);
     print(bod);
     http.post("https://event-manager-red.herokuapp.com/api/"+"login",body: bod,headers: {
       "Content-Type": "application/json"
-    }).then((http.Response response){
+    }).then((http.Response response) async {
 
-      if(response.statusCode==200) {
+      if(response.statusCode==200)  {
         print(response.body);
-        Map<String, dynamic> l = jsonDecode(response.body);
-        print(l["id"]);
-        _id=prefs.setString("id", l["id"]).then((bool success) {
-          return l["id"];
-
-        });
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomePage()));
-
+        UserResp l = loginResponseFromJson(response.body).id;
+        await prefs.setString("id", l.id) ;
+        await prefs.setString("name", l.name) ;
+        await prefs.setString("email", l.email) ;
+        Route route = MaterialPageRoute(builder: (context) => HomePage());
+        Navigator.pop(context);
+        Navigator.pushReplacement(context, route);
       }
       else 
         {
