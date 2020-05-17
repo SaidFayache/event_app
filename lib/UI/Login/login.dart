@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:event_app/UI/Signup/signup.dart';
+import 'package:toast/toast.dart';
 import 'Widgets/bezierContainer.dart';
 import 'package:event_app/API/userModel.dart';
 import 'package:event_app/API/loginModel.dart';
@@ -255,18 +256,25 @@ class _LoginPageState extends State<LoginPage> {
       "Content-Type": "application/json"
     }).then((http.Response response) async {
 
+      print(response.body);
+
+      if(response.statusCode==444){
+        Toast.show(json.decode(response.body)["message"], context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+      }else
       if(response.statusCode==200)  {
         print(response.body);
-        UserResp l = loginResponseFromJson(response.body).id;
+        LoginResponse l = loginResponseFromJson(response.body);
         await prefs.setString("id", l.id) ;
         await prefs.setString("name", l.name) ;
-        await prefs.setString("email", l.email) ;
+        await prefs.setString("email", body["email"]) ;
+        await prefs.setString("token", l.token) ;
         Route route = MaterialPageRoute(builder: (context) => HomePage());
         Navigator.pop(context);
         Navigator.pushReplacement(context, route);
       }
       else 
         {
+          print("error");
           setState(() {
             error="user not found";
           });

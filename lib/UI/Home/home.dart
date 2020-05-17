@@ -251,9 +251,14 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  void _getEvents()
-  {
-    http.get(baseUrl+"api/events").then((http.Response response){
+  void _getEvents() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
+    http.get(baseUrl+"api/events" ,
+    headers: {
+      "x-access-token":token
+    }
+    ).then((http.Response response){
 
       print(response.body) ;
       setState(() {
