@@ -188,22 +188,28 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
     setState(() => this.barcode = barcode);
   }
 
-  void _getRequests(String eventId)
+  void _getRequests(String eventId) async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     http.get(baseUrl + "api/event/request",
-        headers: {"event": eventId}).then((http.Response response) {
+        headers: {"event": eventId,
+          "x-access-token":token}).then((http.Response response) {
           print(response.body);
       setState(() {
         requests=requestsFromJson(response.body);
       });
     });
   }
-  void _updateRequest(String reqId,)
+  void _updateRequest(String reqId,) async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     String body = '{"id":"'+reqId+'","state":"'+status.toString()+'"}';
     http.put(baseUrl + "api/event/request",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-access-token":token
         },body: body).then((http.Response response) {
       print(response.body);
       setState(() {

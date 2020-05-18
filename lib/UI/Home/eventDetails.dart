@@ -11,6 +11,7 @@ import 'planDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:intl/intl.dart';
 import 'package:event_app/Const/strings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -292,11 +293,14 @@ class _EventDetailState extends State<EventDetail> {
   );
   }
 
-  void _loadPlans()
+  void _loadPlans() async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     Map<String, String> headers ;
     headers= {
       'event': e.id,
+      "x-access-token":token
 
     };
     http.get(baseUrl+"api/plan",headers:headers).then((http.Response response){
@@ -311,9 +315,12 @@ class _EventDetailState extends State<EventDetail> {
     });
   }
 
-  _loadTimeSlots(){
+  _loadTimeSlots() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     http.get(baseUrl+"api/event/timeslot",headers: {
-      "event":e.id
+      "event":e.id,
+      "x-access-token":token
     }).then((http.Response response){
       print(response.body);
       timeslots =  timeSlotsFromJson(response.body).timeslots;

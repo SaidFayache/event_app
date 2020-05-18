@@ -80,9 +80,11 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
   {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
+    String token = await pref.getString("token");
 
      await http.get(baseUrl + "api/staff/events",
-        headers: {"user": i}).then((http.Response response) {
+        headers: {"user": i,
+          "x-access-token":token}).then((http.Response response) {
           if(response.statusCode==200)
       setState(() {
         myEvts=staffEventsFromJson(response.body);

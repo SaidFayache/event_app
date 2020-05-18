@@ -185,19 +185,24 @@ class _RequestPageState extends State<RequestPage> {
   void getRequests() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
+    String token = await pref.getString("token");
 
     http.get(baseUrl + "api/user/request",
-        headers: {"user": i}).then((http.Response response) {
+        headers: {"user": i,
+          "x-access-token":token}).then((http.Response response) {
       setState(() {
         myReqs = myRequestsFromJson(response.body);
         reqList = myReqs.requests;
       });
     });
   }
-  void _deleteReq(RequestElement r)  {
+  void _deleteReq(RequestElement r)  async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
 
     http.delete(baseUrl + "api/event/request",
-        headers: {"id": r.request.id}).then((http.Response response) {
+        headers: {"id": r.request.id,
+          "x-access-token":token}).then((http.Response response) {
           print("deleted "+r.request.id);
           print(response.body);
           setState(() {

@@ -116,10 +116,13 @@ class _EventCountingPageState extends State<EventCountingPage> {
     );
   }
 
-  void _getCountings(String eventId)
+  void _getCountings(String eventId) async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     http.get(baseUrl + "api/event/presence",
-        headers: {"event": eventId}).then((http.Response response) {
+        headers: {"event": eventId,
+          "x-access-token":token}).then((http.Response response) {
       print(response.body);
       setState(() {
         ctgs=countingsFromJson(response.body);
@@ -134,10 +137,13 @@ class _EventCountingPageState extends State<EventCountingPage> {
       });
     });
   }
-  void _loadCountingDetails(MyItem item)
+  void _loadCountingDetails(MyItem item) async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     http.get("https://event-manager-red.herokuapp.com/api/" + "/presence",
-        headers: {"id": item.counting.id}).then((http.Response response) {
+        headers: {"id": item.counting.id,
+          "x-access-token":token}).then((http.Response response) {
       print(response.body);
       setState(() {
         item.counting.details=countingDetailsFromJson(response.body);

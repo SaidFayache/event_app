@@ -78,6 +78,8 @@ class _PlanDetailState extends State<PlanDetail> {
 
   void _sendRequest(Plan p) async
   {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
     Map<String,dynamic> bod =new Map();
 
 
@@ -89,7 +91,8 @@ class _PlanDetailState extends State<PlanDetail> {
     PlanReq pl = PlanReq.fromJson(bod);
     String body=planReqToJson(pl);
     http.post(baseUrl+"api/event/request",body: body,headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "x-access-token":token
     }).then((http.Response response){
       print(response.body);
 
