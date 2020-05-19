@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventCountingsModel.dart';
 import 'package:event_app/Const/strings.dart';
+import 'staffCountingDetails.dart';
 
 
 
@@ -42,6 +43,59 @@ class _EventCountingPageState extends State<EventCountingPage> {
   }
 
   Widget _getBody()
+  {
+    return Container(
+      child: ListView.builder(
+        itemCount: countingList.length,
+        itemBuilder: (BuildContext context,int index){
+          return _getItemCard(countingList[index]);
+        },
+
+
+      ),
+    );
+  }
+  Widget _getItemCard(Counting c)
+  {
+    return GestureDetector(
+      child: Card(
+        margin: EdgeInsets.only(top: 10,left: 10,right: 10),
+        child: Container(
+          padding: EdgeInsets.all(5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Center(
+                child: Text(c.name,
+                  style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 5),
+                child: Text(
+                  "People In : "+c.countIn.toString(),style: TextStyle(fontSize: 18),
+                ),
+
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 5),
+                child: Text(
+                  "People Out : "+c.countOut.toString(),style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      onTap: (){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>  CountingDetailsPage(counting: c,)),
+        );
+      },
+    );
+  }
+
+  Widget _getBody1()
   {
     return ListView(
       children: <Widget>[
@@ -128,25 +182,21 @@ class _EventCountingPageState extends State<EventCountingPage> {
         ctgs=countingsFromJson(response.body);
         countingList=ctgs.data;
         for (var c in countingList ){
-          MyItem item= MyItem(counting: c);
-          _loadCountingDetails(item);
-          _items.add(item);
-
-
+          _loadCountingDetails(c);
         }
       });
     });
   }
-  void _loadCountingDetails(MyItem item) async
+  void _loadCountingDetails(Counting item) async
   {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = await prefs.getString("token");
-    http.get("https://event-manager-red.herokuapp.com/api/" + "/presence",
-        headers: {"id": item.counting.id,
+    http.get(baseUrl + "api/presence",
+        headers: {"id": item.id,
           "x-access-token":token}).then((http.Response response) {
       print(response.body);
       setState(() {
-        item.counting.details=countingDetailsFromJson(response.body);
+        item.details=countingDetailsFromJson(response.body);
       });
     });
   }
