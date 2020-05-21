@@ -27,7 +27,7 @@ class Plans {
 class Plan {
   String description;
   List<String> options;
-  int cost;
+  double cost;
   int color;
   String id;
   String name;

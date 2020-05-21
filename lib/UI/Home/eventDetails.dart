@@ -206,7 +206,8 @@ class _EventDetailState extends State<EventDetail> {
                 margin: EdgeInsets.only(top: 20),
                 child: Text(e.description , style: TextStyle(fontSize: 20),),
               ),
-              _getPlans(),
+              //_getPlans(),
+              _buyButton(),
               Container(
                 margin: EdgeInsets.only(top: 30),
                 child: Text(
@@ -220,6 +221,29 @@ class _EventDetailState extends State<EventDetail> {
         ),
       ),
     );
+  }
+
+  Widget _buyButton (){
+    return GestureDetector(
+      child: Center(
+        child: Container(
+          width: 200,
+          height: 50,
+          margin: EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+              color: c1
+          ),
+          child: Center(
+            child: Text("Buy a Ticket",style: TextStyle(color: Colors.white,fontSize: 18),),
+          ),
+
+        ),
+      ),
+    );
+
+
   }
   
   Widget _getPlanCard(Plan p) {
@@ -307,6 +331,7 @@ class _EventDetailState extends State<EventDetail> {
 
       
       setState(() {
+        print(response.body);
         plans = plansFromJson(response.body);
         plansList = plans.plans;
         

@@ -91,7 +91,6 @@ class _CountingDetailsPageState extends State<CountingDetailsPage> {
   Future _scan() async {
     String barcode = await scanner.scan();
     setState(() => this.barcode = barcode);
-
   }
 
   Future<void> _createPopUp(BuildContext context,String code)
@@ -141,14 +140,15 @@ class _CountingDetailsPageState extends State<CountingDetailsPage> {
     http.post(baseUrl + "api/event/presence/user",
         headers: {
           "Content-Type": "application/json",
-          "x-access-token":token},body:body ).then((http.Response response) {
-            print(body);
-            print(userId);
-            print(c.id);
-            print(response.body);
-      _loadCounting();
-    });
+          "x-access-token":token
+        },body:body ).then((http.Response response) {
 
+            if(response.statusCode==200)
+      _loadCounting();
+            else{
+
+            }
+    });
   }
   void _loadCounting() async
   {
