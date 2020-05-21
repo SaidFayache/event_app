@@ -1,15 +1,24 @@
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:event_app/API/Event/allTags.dart';
+import 'package:event_app/API/Event/eventById.dart';
+import 'package:event_app/API/Event/eventCategories.dart';
+import 'package:event_app/API/Event/searchsuggestions.dart';
 import 'package:event_app/UI/Login/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
+import 'package:flutter_tags/flutter_tags.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/API/eventsModel.dart';
 import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'eventDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:event_app/UI/Staff/staffEvents.dart';
 import 'package:event_app/UI/MyQR/myQR.dart';
 import 'package:event_app/Const/strings.dart';
+
+import 'listOfEvents.dart';
 
 
 
@@ -22,19 +31,34 @@ class _HomePageState extends State<HomePage> {
   Events events;
   List<Event> eventsList;
   List<Event> homeScreenList;
+  double cardwidth ;
+  double squareItemSize = 200 ;
+  List<TagItem> tags = new List();
+  List<Suggestion> suggestions = new List();
+  List<EventCategoryItem> eventCat = new List();
+  Suggestion selected ;
+  GlobalKey key = new GlobalKey<AutoCompleteTextFieldState<Suggestion>>();
+  Widget searchbar ;
+  final m = new DateFormat('MMM');
+
 
   void initState()
   {
+
+
     eventsList=new List();
     events=new Events();
     homeScreenList=new List();
-    _getEvents();
+    _loadEvents();
+    _loadTags();
+    _loadCategories();
 
   }
   bool isSearching=false;
 
   @override
   Widget build(BuildContext context) {
+    cardwidth = MediaQuery.of(context).size.width * 0.8;
     return Scaffold(
       drawer: _getDrawer(),
 
@@ -100,7 +124,9 @@ class _HomePageState extends State<HomePage> {
                                   color: Colors.white,
                                   borderRadius: new BorderRadius.all(
                                       new Radius.circular(20.0))),
-                              child: TextField(
+                              child: searchbar
+
+                              /*TextField(
                                 decoration: InputDecoration(hintText: "Search",
                                   prefixIcon: Icon(Icons.search , color: c1,),
                                   fillColor: Colors.white,focusColor: Colors.white,),
@@ -123,7 +149,7 @@ class _HomePageState extends State<HomePage> {
 
 
                                 },
-                              ),) ,
+                              )*/,) ,
                           ),
                         ],
                       ),)),
@@ -137,36 +163,182 @@ class _HomePageState extends State<HomePage> {
   }
   Widget _getBody()
   {
+    return SingleChildScrollView(
+      child: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _getTitle("Comming Events ..."),
+            Container(
+                height: cardwidth/1.5,
+                child: _buildLastEvents()),
+            _getTitle("Tags ..."),
+            Container(child: _getTags(),),
+            SizedBox(height: 100,),
+            Container(
+              color: Color.lerp(Colors.black, Colors.blue, 0.1),
+              child: Column(
+                children: _getCategoriesWidget(),
+              ),
+            )
+          ],
+        ),
+
+      ),
+    );
+  }
+
+  _loadTags(){
+    http.get(baseUrl+"api/tags").then((http.Response response){
+      tags = tagsListFromJson(response.body).data ;
+      tags.removeWhere((tag)=> tag.count==0);
+      _loadSuggestion();
+      setState(() {
+
+      });
+    });
+  }
+
+  _loadSuggestion(){
+    http.get(baseUrl+"api/search").then((http.Response response){
+      suggestions = searchSuggestionsFromJson(response.body).data ;
+        setState(() {
+          searchbar = _getSearchBar() ;
+        });
+
+      });
+
+  }
+
+  _loadCategories(){
+    http.get(baseUrl+"api/events/categories",
+    headers: {
+      "number_tags" : "4" ,
+      "number_events" : "4"
+    }
+    ).then((http.Response response){
+      eventCat = eventCategoriesFromJson(response.body).data ;
+      setState(() {
+
+      });
+    });
+  }
+
+
+  Widget _buildLastEvents(){
     return Container(
+
       child: ListView.builder(
-        itemCount: homeScreenList.length,
+        scrollDirection: Axis.horizontal,
+        itemCount: homeScreenList.length+1,
         itemBuilder: (BuildContext context, int index){
+          if(index==homeScreenList.length) return GestureDetector(
+            child: Card(
+              margin: EdgeInsets.all(15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+              child: Container(
+                child: Container( width: cardwidth, child: Center(child: Text("Load more events",style: TextStyle(fontSize: 30),))),),
+            ),
+            onTap: (){
+              _getMoreLasts();
+            },
+          );
           return _getCard(homeScreenList[index]);
 
         },),
 
+
     );
   }
+
+  Widget _getSearchBar(){
+    return AutoCompleteTextField<Suggestion>(
+      minLength: 3,
+      key : key,
+      decoration: new InputDecoration(
+          hintText: "Search Event:", suffixIcon: new Icon(Icons.search,color: c1,)),
+      itemSubmitted: (item) {
+        _goToEventBySuggestion(item);
+      },
+      suggestions: suggestions,
+
+      itemBuilder: (context, suggestion)=> new Padding(
+
+            child: new ListTile(
+                title: new Text(suggestion.name),
+                trailing: Text(suggestion.start.day.toString()+" "+m.format(suggestion.start))),
+            padding: EdgeInsets.all(8.0)),
+      itemSorter: (a, b) => a.name.compareTo(b.name),
+      itemFilter: (suggestion, input) => suggestion.name.toLowerCase().contains(input.toLowerCase())
+
+    );
+  }
+
+  Widget _getTitle(String str){
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Text(str,style: TextStyle(fontSize: 30 , fontWeight: FontWeight.w300),textAlign: TextAlign.start,),
+    );
+  }
+
+  Widget _getTags(){
+
+    double _fontSize = 22.0 ;
+    return Padding(
+      padding:  EdgeInsets.symmetric(vertical :10.0 , horizontal:MediaQuery.of(context).size.width*0.05 ),
+      child: Center(
+        child: Tags(
+
+          itemCount: tags.length, // required
+          itemBuilder: (int index){
+            final item = tags[index];
+
+            return ItemTags(
+              // Each ItemTags must contain a Key. Keys allow Flutter to
+              // uniquely identify widgets.
+              key: Key(index.toString()),
+              index: index, // required
+              title: item.name+" (${item.count})",
+              customData: item.id,
+              icon: ItemTagsIcon(icon: MdiIcons.fromString(item.name)),
+              textStyle: TextStyle( fontSize: _fontSize, ),
+              combine: ItemTagsCombine.withTextAfter,
+              onPressed: (item) {
+                _getEventsByTag(item.customData,item.title);
+              },
+              onLongPressed: (item) => print(item),
+              color: Colors.deepOrange,
+              activeColor: Colors.deepOrange,
+              textColor: Colors.white,
+            );
+
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _getCard(Event e)
   {
-
-    double card_height = 220.0 ;
+    double ration =2;
+    double cardHeight = cardwidth /ration;
     return GestureDetector(
       child: Card(
         margin: EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(40))),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         child: Container(
-          height: card_height,
+          height: cardHeight/ration,
+          width: cardwidth,
 
           child: Stack(
             children: <Widget>[
               Hero(
                 tag: "Image"+e.id,
                 child: Container(
-                  height: card_height,
+                  height: cardHeight,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 
@@ -180,7 +352,7 @@ class _HomePageState extends State<HomePage> {
                 right: 0,
                 child: Container(
 
-                  height: card_height*.5,
+                  height: cardHeight*.5,
                   decoration: BoxDecoration(
 
                       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8.0),bottomRight: Radius.circular(8.0)),
@@ -225,11 +397,86 @@ class _HomePageState extends State<HomePage> {
       ),
       onTap:(){
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,)));
+            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,hero: "",)));
       },
     );
   }
 
+  Widget _getCategoryCard(Event e,String tag)
+  {
+
+    return GestureDetector(
+      child: Container(
+        margin: EdgeInsets.all(15),
+        child: Container(
+          height: squareItemSize,
+          width: squareItemSize,
+
+          child: Stack(
+            children: <Widget>[
+              Hero(
+                tag: "Image"+e.id+tag,
+                child: Container(
+                  height: squareItemSize,
+
+                  decoration: BoxDecoration(
+                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.cover, ),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all( Radius.circular(8.0))
+
+                  ),
+                  child: Container(),),
+              ),
+              //Center(child: Text(e.name,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
+              Positioned(
+                bottom: 0.0,
+                left: 0,
+                right: 0,
+                child: Container(
+
+                  height: squareItemSize*.5,
+                  decoration: BoxDecoration(
+
+                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8.0),bottomRight: Radius.circular(8.0)),
+                      gradient: LinearGradient(
+                          begin: Alignment(0.0, 2.0),
+                          end: Alignment(0.0, -2.0)
+                          , stops: [
+                        0.1,
+                        0.6,
+                        0.8,
+
+                      ], colors: [
+                        Colors.black.withOpacity(0.9),
+                        Colors.black.withOpacity(.6),
+                        Colors.black.withOpacity(.0)
+                      ])),
+
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                          padding: EdgeInsets.only(top:5,left: 5,bottom: 5),
+                          child: Text(e.name , style: TextStyle(fontSize: 25 , color: Colors.white , fontWeight: FontWeight.bold),)),
+                    ],
+                  ),
+
+                ),
+              ),
+
+
+            ],
+
+          ),
+
+        ),
+      ),
+      onTap: (){
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,hero :tag)));
+      },
+    );
+  }
 
   Widget _getDate(DateTime dateTime){
     final m = new DateFormat('MMM');
@@ -251,12 +498,13 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  void _getEvents() async {
+  void _loadEvents() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = await prefs.getString("token");
-    http.get(baseUrl+"api/events" ,
+    http.get(baseUrl+"api/events/lasts",
     headers: {
-      "x-access-token":token
+      "x-access-token":token ,
+      "count":5.toString()
     }
     ).then((http.Response response){
 
@@ -269,10 +517,6 @@ class _HomePageState extends State<HomePage> {
       });
     });
   }
-
-
-
-
 
 Widget _getDrawer(){
     return Drawer(
@@ -342,4 +586,92 @@ Widget _getDrawer(){
     Navigator.pushReplacement(context, route);
 
   }
+
+  List<Widget> _getCategoriesWidget() {
+List<Widget> list = new List();
+list.add(
+  Padding(
+    padding: const EdgeInsets.all(30.0),
+    child: Text("Descover More Events ...",style: TextStyle(fontWeight: FontWeight.w700,color: Colors.white, fontSize: 40),textAlign: TextAlign.center,),
+  )
+);
+
+for (int index = 0  ;index<eventCat.length;index++){
+  list.add(
+      Container(
+
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical :8.0,horizontal: 20),
+          child: Text(eventCat[index].tag.name,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 25),),
+        ) ,
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: squareItemSize,
+          child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: eventCat[index].events.length+1,
+              itemBuilder: (BuildContext context , int i) {
+                if(i ==eventCat[index].events.length){
+                  return GestureDetector(
+                    onTap: (){
+                      _getEventsByTag(eventCat[index].tag.id, eventCat[index].tag.name);
+                    },
+                    child: Card(
+                      margin: EdgeInsets.all(20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                      child: Container(
+                        child: Container( width: squareItemSize, child: Center(child: Text("Load more events",style: TextStyle(fontSize: 20),))),),
+                    ),
+                  );
+                }
+                return Container(
+                  child: _getCategoryCard(eventCat[index].events[i],eventCat[index].tag.name),);
+              }),
+        )
+      ],
+    ),));
 }
+return list ;
+  }
+
+  void _goToEventBySuggestion(Suggestion item) {
+    http.get(baseUrl+"api/events/${item.id}").then((http.Response res){
+      if(res.statusCode==200){
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => EventDetail(event: eventByIdFromJson(res.body).data,hero : "Suggestion")));
+
+      }
+    });
+  }
+
+  Future<List<Event>> showListofEvents(String title , Future<http.Response> resp){
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ListOfEvents(title,resp)));
+
+    }
+
+  _getEventsByTag(String tagId,String tag){
+    var resp = http.get(baseUrl+"api/events/tag",headers: {
+      "tag":tagId
+    }) ;
+    showListofEvents("Tag :"+tag, resp);
+  }
+
+  void _getMoreLasts() {
+   var resp = http.get(baseUrl+"api/events/lasts",
+        headers: {
+          "count":"0"
+        }
+    );
+   showListofEvents("Lasts", resp);
+
+  }
+
+
+}
+
+
