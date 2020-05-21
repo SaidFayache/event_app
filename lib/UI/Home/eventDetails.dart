@@ -15,16 +15,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
-  EventDetail({Key key, this.event}) : super(key: key);
+  final String hero ;
+  EventDetail({Key key, this.event,this.hero}) : super(key: key);
 
 
   @override
-  _EventDetailState createState() => _EventDetailState(e: event);
+  _EventDetailState createState() => _EventDetailState(e: event , hero : hero);
 }
 
 class _EventDetailState extends State<EventDetail> {
-  _EventDetailState({this.e});
+  _EventDetailState({this.e,this.hero});
   Event e;
+  String hero ;
   Plans plans;
   List<Plan> plansList;
   List<Timeslot> timeslots = new List();
@@ -64,7 +66,7 @@ class _EventDetailState extends State<EventDetail> {
                     title: Container(
                     ),
                     background: Hero(
-                      tag: "Image"+e.id,
+                      tag: "Image"+e.id+hero,
                       child: Container(
                             decoration: new BoxDecoration(
                                 image: DecorationImage(

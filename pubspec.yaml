@@ -30,6 +30,7 @@ dependencies:
   toast: ^0.1.5
   flutter_tags: ^0.4.8+1
   material_design_icons_flutter: ^4.0.5245
+  autocomplete_textfield: ^1.7.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
