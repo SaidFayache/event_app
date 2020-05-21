@@ -276,7 +276,9 @@ class _LoginPageState extends State<LoginPage> {
         {
           print("error");
           setState(() {
+
             error="user not found";
+
           });
         }
     });

@@ -1,3 +1,4 @@
+import 'package:event_app/API/eventsModel.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:http/http.dart' as http;

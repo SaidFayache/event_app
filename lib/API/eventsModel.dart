@@ -33,41 +33,57 @@ class Events {
 }
 
 class Event {
+  List<String> tags;
   String id;
   String name;
   String admin;
-  String description;
-  String location;
   DateTime startDate;
   DateTime endDate;
+  String description;
+  String location;
+  DateTime createdAt;
+  DateTime updatedAt;
+  int v;
 
   Event({
+    this.tags,
     this.id,
     this.name,
     this.admin,
-    this.description,
-    this.location,
     this.startDate,
     this.endDate,
+    this.description,
+    this.location,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(
-    id: json["id"],
+    tags: List<String>.from(json["tags"].map((x) => x)),
+    id: json["_id"],
     name: json["name"],
     admin: json["admin"],
-    description: json["description"],
-    location: json["location"],
     startDate: DateTime.parse(json["start_date"]),
     endDate: DateTime.parse(json["end_date"]),
+    description: json["description"],
+    location: json["location"],
+    createdAt: DateTime.parse(json["createdAt"]),
+    updatedAt: DateTime.parse(json["updatedAt"]),
+    v: json["__v"],
   );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
+    "tags": List<dynamic>.from(tags.map((x) => x)),
+    "_id": id,
     "name": name,
     "admin": admin,
-    "description": description,
-    "location": location,
     "start_date": startDate.toIso8601String(),
     "end_date": endDate.toIso8601String(),
+    "description": description,
+    "location": location,
+    "createdAt": createdAt.toIso8601String(),
+    "updatedAt": updatedAt.toIso8601String(),
+    "__v": v,
   };
 }
