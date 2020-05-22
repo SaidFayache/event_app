@@ -52,7 +52,7 @@ class Plan {
   factory Plan.fromJson(Map<String, dynamic> json) => Plan(
     description: json["description"],
     options: List<String>.from(json["options"].map((x) => x)),
-    cost: json["cost"],
+    cost: json["cost"].toDouble(),
     color: json["color"],
     id: json["_id"],
     name: json["name"],

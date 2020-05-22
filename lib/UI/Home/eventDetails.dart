@@ -10,8 +10,8 @@ import 'package:timeline_list/timeline_model.dart';
 import 'planDetails.dart';
 import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:intl/intl.dart';
-import 'package:event_app/Const/strings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -26,6 +26,7 @@ class EventDetail extends StatefulWidget {
 class _EventDetailState extends State<EventDetail> {
   _EventDetailState({this.e,this.hero});
   Event e;
+  List<String>iconsList;
   String hero ;
   Plans plans;
   List<Plan> plansList;
@@ -36,6 +37,7 @@ class _EventDetailState extends State<EventDetail> {
   @override
   void initState() {
     super.initState();
+    iconsList=["icons8-facebook-entouré-48.png","icons8-facebook-messenger-48.png","icons8-twitter-entouré-48.png","icons8-whatsapp-48.png"];
     plansList=new List();
     _loadTimeSlots();
     _loadPlans();
@@ -126,7 +128,7 @@ class _EventDetailState extends State<EventDetail> {
 
 
                       child: Column(
-
+                                  crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: <Widget>[
                           Text(
@@ -217,7 +219,8 @@ class _EventDetailState extends State<EventDetail> {
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
               ),
-              _getTimeLine()
+              _getTimeLine(),
+              _getRedirectingGrid(),
             ],
           ),
         ),
@@ -243,9 +246,41 @@ class _EventDetailState extends State<EventDetail> {
 
         ),
       ),
+      onTap: (){
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => PlanDetail(event: e,))
+        );
+      },
     );
 
 
+  }
+  
+  Widget _getRedirectingGrid()
+  {
+    return Container(
+      height: 300,
+      child: GridView.count(crossAxisCount: 3,
+      children: List.generate(iconsList.length, (index){
+        return Container(
+          height: 100,
+          child: GestureDetector(
+            child: Card(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset("assets/icons/"+iconsList[index]),
+                  Text("Facebook",style: TextStyle(color: Colors.grey),)
+
+                ],
+              ),
+            ),
+            onTap: _launchURL,
+          )
+        );
+
+      }),),
+    );
   }
   
   Widget _getPlanCard(Plan p) {
@@ -274,7 +309,7 @@ class _EventDetailState extends State<EventDetail> {
       ),
       onTap: (){
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => PlanDetail(plan: p,)));
+            context, MaterialPageRoute(builder: (context) => PlanDetail(event: e,)));
       },
     );
   }
@@ -418,6 +453,14 @@ class _EventDetailState extends State<EventDetail> {
     return Timeline(children: temp, position: TimelinePosition.Center ,shrinkWrap: true,);
 
 
+  }
+  _launchURL() async {
+    const url = 'https://www.facebook.com/';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
 
