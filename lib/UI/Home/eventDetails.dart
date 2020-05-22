@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:event_app/API/eventsModel.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/plansModel.dart';
+import 'package:event_app/API/socialLinksModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeline_list/timeline.dart';
 import 'package:timeline_list/timeline_model.dart';
@@ -12,6 +13,8 @@ import 'package:event_app/UI/MyRequests/requests.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_tags/flutter_tags.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -27,6 +30,7 @@ class _EventDetailState extends State<EventDetail> {
   _EventDetailState({this.e,this.hero});
   Event e;
   List<String>iconsList;
+  List<SocialMediaLink>linksList;
   String hero ;
   Plans plans;
   List<Plan> plansList;
@@ -37,6 +41,8 @@ class _EventDetailState extends State<EventDetail> {
   @override
   void initState() {
     super.initState();
+    linksList=List();
+    _loadLinks();
     iconsList=["icons8-facebook-entouré-48.png","icons8-facebook-messenger-48.png","icons8-twitter-entouré-48.png","icons8-whatsapp-48.png"];
     plansList=new List();
     _loadTimeSlots();
@@ -220,6 +226,13 @@ class _EventDetailState extends State<EventDetail> {
                 ),
               ),
               _getTimeLine(),
+              Container(
+                margin: EdgeInsets.only(top: 30),
+                child: Text(
+                  "Social Media links",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+              ),
               _getRedirectingGrid(),
             ],
           ),
@@ -261,7 +274,7 @@ class _EventDetailState extends State<EventDetail> {
     return Container(
       height: 300,
       child: GridView.count(crossAxisCount: 3,
-      children: List.generate(iconsList.length, (index){
+      children: List.generate(linksList.length, (index){
         return Container(
           height: 100,
           child: GestureDetector(
@@ -269,13 +282,16 @@ class _EventDetailState extends State<EventDetail> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Image.asset("assets/icons/"+iconsList[index]),
-                  Text("Facebook",style: TextStyle(color: Colors.grey),)
+                    Icon(MdiIcons.fromString(linksList[index].website),size: 30,)
+                  ,SizedBox(height: 5,),
+                  Text(linksList[index].website,style: TextStyle(color: Colors.grey),)
 
                 ],
               ),
             ),
-            onTap: _launchURL,
+            onTap: (){
+              _launchURL(linksList[index].link);
+            },
           )
         );
 
@@ -454,13 +470,35 @@ class _EventDetailState extends State<EventDetail> {
 
 
   }
-  _launchURL() async {
-    const url = 'https://www.facebook.com/';
+  _launchURL(String url) async {
+
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  void _loadLinks() async
+  {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = await prefs.getString("token");
+    SocialLinks s;
+    http.get(baseUrl+"api/event/sociallinks",headers: {
+      "event":e.id,
+      "x-access-token":token
+    }).then((http.Response response){
+      print(response.body);
+        if(response.statusCode==200)
+          {
+            s=socialLinksFromJson(response.body);
+                setState(() {
+                  linksList=s.socialMediaLinks;
+                });
+          }
+//
+    });
+
   }
 
 
