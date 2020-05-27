@@ -1,4 +1,5 @@
 import 'package:event_app/API/login/loginResponse.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -248,40 +249,46 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _sendLogin() async
   {
+
+
+
     final SharedPreferences prefs = await _prefs;
     Login log=Login.fromJson(body);
     String bod=loginToJson(log);
     print(bod);
-    http.post(baseUrl+"api/login",body: bod,headers: {
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/login",context: context,showLoading: true);
+    httpBuilder
+        .post()
+        .body(bod)
+        .headers({
       "Content-Type": "application/json"
-    }).then((http.Response response) async {
+    })
+        .showDefaultOnFailureAlert("error")
+        .showDefaultOnSuccessAlert("Success", "Log-in Successfully")
+        .showWarningAlert("Login", "Do you really wanna login ? ")
+        .onSuccess((http.Response response) async {
 
-      print(response.body);
+            print(response.body);
+            LoginResponse l = loginResponseFromJson(response.body);
+            await prefs.setString("id", l.id) ;
+            await prefs.setString("name", l.name) ;
+            await prefs.setString("email", body["email"]) ;
+            await prefs.setString("token", l.token) ;
+            Route route = MaterialPageRoute(builder: (context) => HomePage());
+            Navigator.pop(context);
+            Navigator.pushReplacement(context, route);
 
-      if(response.statusCode==444){
-        Toast.show(json.decode(response.body)["message"], context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-      }else
-      if(response.statusCode==200)  {
-        print(response.body);
-        LoginResponse l = loginResponseFromJson(response.body);
-        await prefs.setString("id", l.id) ;
-        await prefs.setString("name", l.name) ;
-        await prefs.setString("email", body["email"]) ;
-        await prefs.setString("token", l.token) ;
-        Route route = MaterialPageRoute(builder: (context) => HomePage());
-        Navigator.pop(context);
-        Navigator.pushReplacement(context, route);
-      }
-      else 
-        {
-          print("error");
-          setState(() {
+         })
+        .onFailure((resp){
+             setState(() {
+                error="user not found";
+              });}
+              );
 
-            error="user not found";
+    httpBuilder.run();
 
-          });
-        }
-    });
+
 
   }
   }

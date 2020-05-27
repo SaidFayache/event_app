@@ -83,6 +83,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_sequence_animation:
+    dependency: transitive
+    description:
+      name: flutter_sequence_animation
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   flutter_tags:
     dependency: "direct main"
     description:
@@ -322,6 +329,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
+  sweetalert:
+    dependency: "direct main"
+    description:
+      name: sweetalert
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1"
   term_glyph:
     dependency: transitive
     description:
