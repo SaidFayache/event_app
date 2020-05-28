@@ -22,6 +22,8 @@ class _RequestPageState extends State<RequestPage> {
   MyRequests myReqs;
   List<RequestElement> reqList=new List();
 
+  List<String> status = ["Unproved","Unpaid","Accepted","Refused"];
+
   final date = new DateFormat('MMMEd');
   final time = new DateFormat('jm');
 
@@ -60,126 +62,7 @@ class _RequestPageState extends State<RequestPage> {
       padding: const EdgeInsets.all(20.0),
       child: getTicket(req),
     );
-    return Container(
-      child: Card(
-        margin: EdgeInsets.all(10),
-        child: Column(
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10),
-              child: Center(
-                  child: Text(
-                "Event : " + req.event.name,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-              )),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-                  child: Row(
-                    children :<Widget>[
-                      Text(
-                      "Plan : ",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                      Text(
-                        req.plan.name,
-                        style: TextStyle( fontSize: 20),
-                      ),
-                    ]
-                  ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-              child: Row(
-                  children :<Widget>[
-                    Text(
-                      "Price : ",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    Text(
-                      req.plan.cost.toString()+" TND",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ]
-              ),
-            ),Container(
-              margin: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-              child: Row(
-                  children :<Widget>[
-                    Text(
-                      "Request Status : ",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    Text(
-                      req.request.state.toString(),
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ]
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children:<Widget>[
-                Container(
-                margin: EdgeInsets.all(10),
-                child: GestureDetector(
-                  child: Container(
-                    height: 50,
-                    width: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.red,
-                      borderRadius: BorderRadius.all(Radius.circular(20))
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.delete,color: Colors.white,),
-                          Text("Delete Request ",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 18),)
-                        ],
-                      ),
-                    ),
-                  ),
-                  onTap: (){
-                    _deleteReq(req);
-                  },
-                ),
-              ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  child: GestureDetector(
-                    child: Container(
-                      height: 50,
-                      width: 150,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: c1,
-                          borderRadius: BorderRadius.all(Radius.circular(20))
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(Icons.comment,color: Colors.white,),
-                            Text(" Ticket Code",style: TextStyle(color: Colors.white,fontSize: 18),)
-                          ],
-                        ),
-                      ),
-                    ),
-                    onTap: (){
-                      _generateBarCode(req.request.id);
-                      _createPopUpQr(context);
 
-                    },
-                  ),
-                ),
-                ]
-            )
-          ],
-        ),
-      ),
-    );
   }
 
   void getRequests() async {
@@ -244,14 +127,30 @@ class _RequestPageState extends State<RequestPage> {
       alignment: Alignment.center,
       animationDuration: Duration(seconds: 2),
       expansionChild: Container(
-        child: QrImage(
-          data: "1234567890",
-          version: QrVersions.auto,
-          size: 250.0,
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text("Ticket Status : "+status[req.request.state] , style: TextStyle(fontSize: 20),),
+                  RaisedButton.icon( onPressed:req.request.state!=0?null:(){
+                    _deleteReq(req);
+                  }, icon: Icon(Icons.delete,color: Colors.white,), label: Text("delete",style: TextStyle(color: Colors.white),)  , color: Colors.redAccent,)
+                ],
+              ),
+            ),
+            QrImage(
+              data: req.request.id,
+              version: QrVersions.auto,
+              size: 250.0,
+            ),
+          ],
         ),
-        height: 270,
+        height: 350,
       ),
-      expandedHeight: 500,
+      expandedHeight: 600,
       expandIcon: CircleAvatar(
         maxRadius: 14,
         child: Icon(
@@ -261,7 +160,7 @@ class _RequestPageState extends State<RequestPage> {
         ),
       ),
       expansionTitle: Text(
-        'QR CODE',
+        'More Details',
         style: TextStyle(
           color: Colors.blue,
           fontWeight: FontWeight.w600,
@@ -403,9 +302,5 @@ class _RequestPageState extends State<RequestPage> {
     );
   }
 
-  Future _generateBarCode(String id) async {
 
-    Uint8List result = await scanner.generateBarCode(id);
-    this.setState(() => this.bytes = result);
-  }
 }
