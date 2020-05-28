@@ -10,6 +10,7 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventCountingsModel.dart';
 import 'package:event_app/Const/strings.dart';
 import 'staffCountingDetails.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 
@@ -173,12 +174,13 @@ class _EventCountingPageState extends State<EventCountingPage> {
 
   void _getCountings(String eventId) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl + "api/event/presence",
-        headers: {"event": eventId,
-          "x-access-token":token}).then((http.Response response) {
-      print(response.body);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/presence",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "event": eventId,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         ctgs=countingsFromJson(response.body);
         countingList=ctgs.data;
@@ -186,20 +188,27 @@ class _EventCountingPageState extends State<EventCountingPage> {
           _loadCountingDetails(c);
         }
       });
+
     });
+
+    httpBuilder.run();
   }
   void _loadCountingDetails(Counting item) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl + "api/presence",
-        headers: {"id": item.id,
-          "x-access-token":token}).then((http.Response response) {
-      print(response.body);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/presence",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "id": item.id,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         item.details=countingDetailsFromJson(response.body);
       });
+
     });
+
+    httpBuilder.run();
   }
 
 }

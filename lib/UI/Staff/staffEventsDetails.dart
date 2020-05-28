@@ -10,6 +10,7 @@ import 'dart:typed_data';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventRequests.dart';
 import 'package:event_app/Const/strings.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 class StaffEventsDetailsPage extends StatefulWidget {
@@ -191,32 +192,42 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
 
   void _getRequests(String eventId) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl + "api/event/request",
-        headers: {"event": eventId,
-          "x-access-token":token}).then((http.Response response) {
-          print(response.body);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "event": eventId,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         requests=requestsFromJson(response.body);
       });
+
     });
+
+    httpBuilder.run();
+
   }
   void _updateRequest(String reqId,) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
+
     String body = '{"id":"'+reqId+'","state":"'+status.toString()+'"}';
-    http.put(baseUrl + "api/event/request",
-        headers: {
-          "Content-Type": "application/json",
-          "x-access-token":token
-        },body: body).then((http.Response response) {
-      print(response.body);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: context,showLoading: false);
+    httpBuilder
+        .put()
+        .body(body)
+        .headers({
+      "Content-Type": "application/json",
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         _getRequests(e.id);
       });
+
     });
+
+    httpBuilder.run();
+
   }
   void change(String n)
   {

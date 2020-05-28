@@ -10,6 +10,7 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ticket_pass_package/ticket_pass.dart';
 import 'package:intl/intl.dart';
 import 'package:event_app/Const/strings.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 class RequestPage extends StatefulWidget {
@@ -68,31 +69,43 @@ class _RequestPageState extends State<RequestPage> {
   void getRequests() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
-    String token = await pref.getString("token");
-
-    http.get(baseUrl + "api/user/request",
-        headers: {"user": i,
-          "x-access-token":token}).then((http.Response response) {
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/user/request",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "user": i,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         myReqs = myRequestsFromJson(response.body);
         reqList = myReqs.requests;
       });
+
     });
+
+    httpBuilder.run();
+
   }
   void _deleteReq(RequestElement r)  async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-
-    http.delete(baseUrl + "api/event/request",
-        headers: {"id": r.request.id,
-          "x-access-token":token}).then((http.Response response) {
-          print("deleted "+r.request.id);
-          print(response.body);
-          setState(() {
-            reqList.remove(r);
-          });
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: context,showLoading: true);
+    httpBuilder
+        .delete()
+        .headers({
+      "id": r.request.id,
+    })
+        .showDefaultOnFailureAlert("error")
+        .showDefaultOnSuccessAlert("Success", "Request "+r.request.id+" deleted successfully")
+        .showWarningAlert("Delete", "Do you really wanna delete the request ? ")
+        .onSuccess((http.Response response) async {
+      print("deleted "+r.request.id);
+      setState(() {
+        reqList.remove(r);
+      });
 
     });
+
+    httpBuilder.run();
+
   }
 
   Future<void> _createPopUpQr(BuildContext context)

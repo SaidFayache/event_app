@@ -9,6 +9,7 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventCountingsModel.dart';
 import 'package:event_app/Const/strings.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 class CountingDetailsPage extends StatefulWidget {
   final Counting counting;
@@ -134,33 +135,36 @@ class _CountingDetailsPageState extends State<CountingDetailsPage> {
 
   void _addPresence(String userId) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
+
     String body='{"event_counting" :"'+c.id+'","user":"'+userId+'"}';
-    http.post(baseUrl + "api/event/presence/user",
-        headers: {
-          "Content-Type": "application/json",
-          "x-access-token":token
-        },body:body ).then((http.Response response) {
-
-            if(response.statusCode==200)
-      _loadCounting();
-            else{
-
-            }
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/presence/user",context: context,showLoading: false);
+    httpBuilder
+        .post()
+        .body(body)
+        .headers({
+      "Content-Type": "application/json",
+    })
+        .onSuccess((http.Response response) async {
+      setState(() {
+        _loadCounting();
+      });
     });
+    httpBuilder.run();
   }
   void _loadCounting() async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl + "api/presence",
-        headers: {"id": c.id,
-          "x-access-token":token}).then((http.Response response) {
-      //print(response.body);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/presence",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "id": c.id,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         c.details=countingDetailsFromJson(response.body);
       });
     });
+    httpBuilder.run();
+
   }
 }

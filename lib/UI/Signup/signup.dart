@@ -6,6 +6,7 @@ import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/userModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/Const/strings.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 
@@ -238,11 +239,18 @@ class _SignupPageState extends State<SignupPage> {
      String bod=userToJson(user);
      print(bod);
 
-    http.post(baseUrl+"api/users",body: bod, headers: {
-      "Content-Type": "application/json"
-    }).then((http.Response response){
-      print(body);
-      print(response.body) ;
-    }) ;
+      HttpBuilder httpBuilder = new HttpBuilder(url: "api/users",context: context,showLoading: true);
+      httpBuilder
+          .post()
+          .body(bod)
+          .headers({
+        "Content-Type": "application/json"
+      })
+          .showDefaultOnFailureAlert("error")
+          .showDefaultOnSuccessAlert("Success", "Signed up Successfully")
+          .showWarningAlert("Signup", "Do you really wanna signup ? ");
+
+      httpBuilder.run();
+
   }
 }

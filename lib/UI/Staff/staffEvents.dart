@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_app/API/staffEventsModel.dart';
 import 'staffEventsDetails.dart';
 import 'package:event_app/Const/strings.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 
@@ -81,18 +82,22 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
   {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
-    String token = await pref.getString("token");
-
-     await http.get(baseUrl + "api/staff/events",
-        headers: {"user": i,
-          "x-access-token":token}).then((http.Response response) {
-          if(response.statusCode==200)
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/staff/events",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
+      "user": i,
+    })
+        .onSuccess((http.Response response) async {
       setState(() {
         myEvts=staffEventsFromJson(response.body);
         evtsList=myEvts.events;
       });
 
     });
+
+    httpBuilder.run();
+
   }
 
 }

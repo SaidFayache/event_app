@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_tags/flutter_tags.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -29,11 +30,9 @@ class EventDetail extends StatefulWidget {
 class _EventDetailState extends State<EventDetail> {
   _EventDetailState({this.e,this.hero});
   Event e;
-  List<String>iconsList;
   List<SocialMediaLink>linksList;
   String hero ;
   Plans plans;
-  List<Plan> plansList;
   List<Timeslot> timeslots = new List();
   final m = new DateFormat('MMMEd');
   final d = new DateFormat('jm');
@@ -43,10 +42,7 @@ class _EventDetailState extends State<EventDetail> {
     super.initState();
     linksList=List();
     _loadLinks();
-    iconsList=["icons8-facebook-entouré-48.png","icons8-facebook-messenger-48.png","icons8-twitter-entouré-48.png","icons8-whatsapp-48.png"];
-    plansList=new List();
     _loadTimeSlots();
-    _loadPlans();
   }
   
 
@@ -286,9 +282,9 @@ class _EventDetailState extends State<EventDetail> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                    Icon(MdiIcons.fromString(linksList[index].website),size: 30,)
+                    Icon(MdiIcons.fromString(linksList[index].website),size: 50,)
                   ,SizedBox(height: 5,),
-                  Text(linksList[index].website,style: TextStyle(color: Colors.grey),)
+                  Text(linksList[index].title,style: TextStyle(color: Colors.grey),)
 
                 ],
               ),
@@ -304,115 +300,27 @@ class _EventDetailState extends State<EventDetail> {
     );
   }
   
-  Widget _getPlanCard(Plan p) {
-    return GestureDetector(
-      child: Container(
-        margin: EdgeInsets.only(left: 10,right: 10),
-        height: 190,
-        width: 125,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-          color: Colors.green,
-          gradient: LinearGradient(colors: [colors[p.color],Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight)
-        ),
-        child: Center(child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(p.name),
-              ),
-              Text("Cost : "+p.cost.toString() +"TND")
-            ], )),
-      ),
-      onTap: (){
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => PlanDetail(event: e,)));
-      },
-    );
-  }
 
-  Widget _getPlans() {
-    return Container(
-    width: MediaQuery.of(context).size.width,
-    height: 270,
-    margin: EdgeInsets.only(top: 10),
-    padding: EdgeInsets.all(5),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.3),
-          spreadRadius: 2,
-          blurRadius: 2,
-          offset: Offset(0,2), // changes position of shadow
-        ),
-      ],
 
-    ),
-    child: Column(
-//      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.all(5),
-        child: Text("Plans",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
-        Container(
-          height: 200,
-          child: ListView.builder(scrollDirection: Axis.horizontal,
-
-          itemCount: plansList.length,
-          itemBuilder: (BuildContext context,int index){
-            return _getPlanCard(plansList[index]);
-          },
-      ),
-        ),]
-    ),
-  );
-  }
-
-  void _loadPlans() async
-  {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    Map<String, String> headers ;
-    headers= {
-      'event': e.id,
-      "x-access-token":token
-
-    };
-    http.get(baseUrl+"api/plan",headers:headers).then((http.Response response){
-
-      
-      setState(() {
-        print(response.body);
-        plans = plansFromJson(response.body);
-        plansList = plans.plans;
-        
-
-      });
-    });
-  }
 
   _loadTimeSlots() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl+"api/event/timeslot",headers: {
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/timeslot",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
       "event":e.id,
-      "x-access-token":token
-    }).then((http.Response response){
-      print(response.body);
+    })
+        .onSuccess((http.Response response){
       timeslots =  timeSlotsFromJson(response.body).timeslots;
       timeslots.sort((Timeslot a, Timeslot b) => a.startDate.compareTo(b.startDate) );
-
       setState(() {
 
       });
     });
+
+    httpBuilder.run();
+
   }
 
   Widget _getTimeLine(){
@@ -486,23 +394,22 @@ class _EventDetailState extends State<EventDetail> {
 
   void _loadLinks() async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
     SocialLinks s;
-    http.get(baseUrl+"api/event/sociallinks",headers: {
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/sociallinks",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
       "event":e.id,
-      "x-access-token":token
-    }).then((http.Response response){
-      print(response.body);
-        if(response.statusCode==200)
-          {
-            s=socialLinksFromJson(response.body);
-                setState(() {
-                  linksList=s.socialMediaLinks;
-                });
-          }
-//
+        })
+        .onSuccess((http.Response response){
+      s=socialLinksFromJson(response.body);
+      setState(() {
+        linksList=s.socialMediaLinks;
+      });
     });
+
+    httpBuilder.run();
 
   }
 

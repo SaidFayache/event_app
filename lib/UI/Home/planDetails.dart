@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_app/Const/strings.dart';
 import 'package:progress_state_button/iconed_button.dart';
 import 'package:progress_state_button/progress_button.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 
 
 class PlanDetail extends StatefulWidget {
@@ -23,13 +24,14 @@ class _PlanDetailState extends State<PlanDetail> {
   Event e;
   Plans plans;
   List<Plan> plansList;
-  ButtonState stateTextWithIcon = ButtonState.idle;
+  List<ButtonState> stateTextWithIcon ;
 
 
   @override
   void initState() {
 
     plansList=new List();
+    stateTextWithIcon=new List();
     _loadPlans();
   }
 
@@ -50,11 +52,11 @@ class _PlanDetailState extends State<PlanDetail> {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Container(
-        height: 500,
+        height: MediaQuery.of(context).size.height-100,
         child: ListView.builder(
           itemCount: plansList.length,
           itemBuilder: (BuildContext context , int index){
-            return getPlanCard(plansList[index]);
+            return getPlanCard(plansList[index],index);
 
           },
         ),
@@ -62,7 +64,7 @@ class _PlanDetailState extends State<PlanDetail> {
     );
   }
 
-  Widget getPlanCard(Plan p)
+  Widget getPlanCard(Plan p,int index)
   {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10,horizontal: 2),
@@ -119,7 +121,7 @@ class _PlanDetailState extends State<PlanDetail> {
 //                        _sendRequest(p);
 //                      },
 //                    ),
-                  child: buildTextWithIcon(p),
+                  child: buildTextWithIcon(p,index),
                   ),
                 ),
 
@@ -154,7 +156,7 @@ class _PlanDetailState extends State<PlanDetail> {
       ),
     );
   }
-  Widget buildTextWithIcon(Plan p) {
+  Widget buildTextWithIcon(Plan p,int index) {
     return ProgressButton.icon(iconedButtons: {
       ButtonState.idle: IconedButton(
           text: "Send Reservation",
@@ -174,32 +176,32 @@ class _PlanDetailState extends State<PlanDetail> {
           ),
           color: Colors.green.shade400)
     }, onPressed: (){
-      onPressedIconWithText(p);
+      onPressedIconWithText(p,index);
     },
-        state: stateTextWithIcon);
+        state: stateTextWithIcon[index]);
   }
-  void onPressedIconWithText(Plan p) {
-    switch (stateTextWithIcon) {
+  void onPressedIconWithText(Plan p,int index) {
+    switch (stateTextWithIcon[index]) {
       case ButtonState.idle:
-        stateTextWithIcon = ButtonState.loading;
-       _sendRequest(p);
+        stateTextWithIcon[index] = ButtonState.loading;
+       _sendRequest(p,index);
 
         break;
       case ButtonState.loading:
         break;
       case ButtonState.success:
-        stateTextWithIcon = ButtonState.idle;
+        stateTextWithIcon[index] = ButtonState.idle;
         break;
       case ButtonState.fail:
-        stateTextWithIcon = ButtonState.idle;
+        stateTextWithIcon[index] = ButtonState.idle;
         break;
     }
     setState(() {
-      stateTextWithIcon = stateTextWithIcon;
+      stateTextWithIcon[index] = stateTextWithIcon[index];
     });
   }
 
-  Widget _getBody1(Plan p) {
+  Widget _getBody1(Plan p,int index) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
       child: Column(
@@ -239,7 +241,7 @@ class _PlanDetailState extends State<PlanDetail> {
 
               ),
               onTap: (){
-                _sendRequest(p);
+                _sendRequest(p,index);
               },
             ),
           ),
@@ -248,13 +250,10 @@ class _PlanDetailState extends State<PlanDetail> {
     );
   }
 
-  void _sendRequest(Plan p) async
+  void _sendRequest(Plan p,int index) async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
+
     Map<String,dynamic> bod =new Map();
-
-
     SharedPreferences pref= await SharedPreferences.getInstance();
     String i=pref.getString("id");
     bod["user"]=i;
@@ -262,42 +261,56 @@ class _PlanDetailState extends State<PlanDetail> {
     bod["plan"]=p.id;
     PlanReq pl = PlanReq.fromJson(bod);
     String body=planReqToJson(pl);
-    http.post(baseUrl+"api/event/request",body: body,headers: {
-      "Content-Type": "application/json",
-      "x-access-token":token
-    }).then((http.Response response){
-      print(response.body);
-      if(response.statusCode==200) {
-        setState(() {
-          stateTextWithIcon = ButtonState.success;
-        });
-      }
-      else
-        stateTextWithIcon=ButtonState.fail;
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: context,showLoading: true);
+    httpBuilder
+        .post()
+        .body(body)
+        .headers({
+      "Content-Type": "application/json"
+    })
+        .showDefaultOnFailureAlert("error")
+        .showDefaultOnSuccessAlert("Success", "Reservation sent successfully")
+        .showWarningAlert("Reservation", "Do you really wanna Reserve a ticket ? ")
+        .onSuccess((http.Response response) async {
+      setState(() {
+        stateTextWithIcon[index] = ButtonState.success;
+      });
+
+    })
+    .onFailure((http.Response response) async {
+      setState(() {
+        stateTextWithIcon[index] = ButtonState.fail;
+      });
+
     });
 
+    httpBuilder.run();
 
   }
 
   void _loadPlans() async
   {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    Map<String, String> headers ;
-    headers= {
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/plan",context: context,showLoading: false);
+    httpBuilder
+        .get()
+        .headers({
       'event': e.id.toString(),
-      "x-access-token":token
-    };
-    http.get(baseUrl+"api/plan",headers:headers).then((http.Response response){
+    })
+        .onSuccess((http.Response response) async {
+          int i;
 
-      print(response.body);
       setState(() {
 
         plans = plansFromJson(response.body);
         plansList = plans.plans;
-
-
+        for(i=0;i<plansList.length;i++)
+        {
+          stateTextWithIcon.add(ButtonState.idle);
+        }
       });
+
     });
+
+    httpBuilder.run();
   }
 }

@@ -76,7 +76,6 @@ class HttpBuilder {
           }
       );
     };
-
    return this ;
   }
 
