@@ -290,6 +290,7 @@ class _EventDetailState extends State<EventDetail> {
               ),
             ),
             onTap: (){
+
               _launchURL(linksList[index].link);
             },
           )
