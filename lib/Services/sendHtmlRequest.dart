@@ -43,6 +43,8 @@ class HttpBuilder {
     this.requestType = 3 ;
     return this ;
   }
+
+
   HttpBuilder onSuccess(Function(http.Response response) function){
     this._onSuccess = function ;
     return this ;
@@ -77,6 +79,8 @@ class HttpBuilder {
 
    return this ;
   }
+
+
   HttpBuilder showDefaultOnFailureAlert(String title){
     this._showDefaultOnFailureAlert =  (error , http.Response response){
       SweetAlert.show(context,
@@ -90,8 +94,6 @@ class HttpBuilder {
 
       );
     };
-
-
 
     return this ;
   }
@@ -145,9 +147,16 @@ class HttpBuilder {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token =  prefs.getString("token");
 
-    if(_headers!=null) _headers["x-access-token"]=token ;
+    if(_headers!=null) {
+      _headers["x-access-token"]=token ;
+    }else{
+      _headers = {
 
-    print(_headers);
+      };
+    }
+    if(_body==null){
+      _body ="";
+    }
     Future<http.Response> request ;
 
     switch(requestType){
