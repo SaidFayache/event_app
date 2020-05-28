@@ -74,16 +74,19 @@ class _ListOfEventsState extends State<ListOfEvents> {
 
           child: Stack(
             children: <Widget>[
-              Container(
-                height: card_height,
+              Hero(
+                tag: "Image"+e.id+"ListItem",
+                child: Container(
+                  height: card_height,
 
-                decoration: BoxDecoration(
-                    image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.all( Radius.circular(8.0))
+                  decoration: BoxDecoration(
+                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all( Radius.circular(8.0))
 
-                ),
-                child: Container(),),
+                  ),
+                  child: Container(),),
+              ),
               //Center(child: Text(e.name,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),),
               Positioned(
                 bottom: 0.0,
@@ -136,7 +139,7 @@ class _ListOfEventsState extends State<ListOfEvents> {
       ),
       onTap:(){
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,)));
+            context, MaterialPageRoute(builder: (context) => EventDetail(event: e,hero: "ListItem",)));
       },
     );
   }

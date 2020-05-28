@@ -52,6 +52,10 @@ class _EventDetailState extends State<EventDetail> {
 
   @override
   Widget build(BuildContext context) {
+
+
+    print("id : "+e.id);
+    print("hero : "+hero);
     return Scaffold(backgroundColor: Colors.white,
         body: NestedScrollView(
           scrollDirection: Axis.vertical,
