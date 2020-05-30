@@ -338,7 +338,7 @@ class _HomePageState extends State<HomePage> {
                   height: cardHeight,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image.network(e.imageLink).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 
@@ -420,7 +420,7 @@ class _HomePageState extends State<HomePage> {
                   height: squareItemSize,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.cover, ),
+                      image: DecorationImage(image: Image.network(e.imageLink).image ,fit: BoxFit.cover, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 

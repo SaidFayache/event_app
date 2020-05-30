@@ -80,7 +80,7 @@ class _ListOfEventsState extends State<ListOfEvents> {
                   height: card_height,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image.network(e.imageLink).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 

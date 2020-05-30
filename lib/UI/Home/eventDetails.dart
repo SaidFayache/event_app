@@ -78,7 +78,7 @@ class _EventDetailState extends State<EventDetail> {
                       child: Container(
                             decoration: new BoxDecoration(
                                 image: DecorationImage(
-                                    image:  Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image,
+                                    image:  Image.network(e.imageLink).image,
                                     fit: BoxFit.cover),
                                 borderRadius: new BorderRadius.all(
                                     new Radius.circular(20.0))),
