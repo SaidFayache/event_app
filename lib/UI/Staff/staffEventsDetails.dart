@@ -11,7 +11,9 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:event_app/API/eventRequests.dart';
 import 'package:event_app/Const/strings.dart';
 import 'package:event_app/Services/sendHtmlRequest.dart';
+import 'package:toast/toast.dart';
 
+//Unused Pageeeee
 
 class StaffEventsDetailsPage extends StatefulWidget {
   final Event event;
@@ -72,8 +74,15 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
                   if(barcode !='')
                   {
                     print("barcode found :"+barcode);
-                    RequestElement r=requests.requests.where((req)=> req.request.id.compareTo(barcode)==0).toList()[0];
+                    if(!requests.requests.where((req)=> req.request.id.compareTo(barcode)==0).toList().isEmpty)
+                    {RequestElement r=requests.requests.where((req)=> req.request.id.compareTo(barcode)==0).toList()[0];
                     _createPopUp(context,r);
+                    }
+                    else{
+                      Toast.show("Request id not found", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                    }
+
+
                   }
                 });
 
@@ -199,6 +208,7 @@ class _StaffEventsDetailsPageState extends State<StaffEventsDetailsPage> {
       "event": eventId,
     })
         .onSuccess((http.Response response) async {
+          print(response.body);
       setState(() {
         requests=requestsFromJson(response.body);
       });

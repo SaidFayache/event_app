@@ -61,6 +61,7 @@ class _MyQrPageState extends State<MyQrPage> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String i = pref.getString("id");
     username = pref.getString("name");
+    print(i);
     Uint8List result = await scanner.generateBarCode(i);
     this.setState(() => this.bytes = result);
   }
