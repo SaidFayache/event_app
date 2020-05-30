@@ -71,7 +71,7 @@ class _RequestPageState extends State<RequestPage> {
     String i = pref.getString("id");
     HttpBuilder httpBuilder = new HttpBuilder(url: "api/user/request",context: context,showLoading: false);
     httpBuilder
-        .get()
+        .getWithCache()
         .headers({
       "user": i,
     })

@@ -2,15 +2,18 @@ import 'dart:convert';
 
 import 'package:event_app/Const/strings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sweetalert/sweetalert.dart';
 
 
+
+
 class HttpBuilder {
 
   String url ;
-  dynamic _headers;
+  dynamic _headers ;
   bool showLoading = false;
 
   String  _body;
@@ -41,6 +44,10 @@ class HttpBuilder {
   }
   HttpBuilder delete(){
     this.requestType = 3 ;
+    return this ;
+  }
+  HttpBuilder getWithCache(){
+    this.requestType = 4 ;
     return this ;
   }
 
@@ -150,7 +157,7 @@ class HttpBuilder {
       _headers["x-access-token"]=token ;
     }else{
       _headers = {
-
+        "x-access-token" : token
       };
     }
     if(_body==null){
@@ -163,7 +170,30 @@ class HttpBuilder {
       case 1 : request = http.post(baseUrl+url,headers: _headers , body: _body);break ;
       case 2 : request = http.put(baseUrl+url,headers: _headers,body: _body);break ;
       case 3 : request = http.delete(baseUrl+url,headers: _headers);break ;
+      case 4 : {
+        print(_headers);
+        //Try to Get file from Cache
+        var fetchedFile =  DefaultCacheManager().getSingleFile(baseUrl+url,headers: _headers);
+
+        _onSuccess( http.Response((await fetchedFile).readAsStringSync(),200))  ;
+
+        // Download latest version of the file !
+        DefaultCacheManager().downloadFile(baseUrl+url,authHeaders: _headers).then((FileInfo fileInfo){
+
+          _onSuccess( http.Response(fileInfo.file.readAsStringSync(),200))  ;
+
+        });
+
+
+
+        return ;
+      }
     }
+
+
+
+
+
     http.Response response = await request ;
 
     print(response.body);
