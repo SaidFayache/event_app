@@ -3,9 +3,11 @@ import 'package:event_app/API/Event/allTags.dart';
 import 'package:event_app/API/Event/eventById.dart';
 import 'package:event_app/API/Event/eventCategories.dart';
 import 'package:event_app/API/Event/searchsuggestions.dart';
+import 'package:event_app/Services/sendHtmlRequest.dart';
 import 'package:event_app/UI/Login/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:event_app/Const/colors.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_tags/flutter_tags.dart';
 import 'package:http/http.dart' as http;
 import 'package:event_app/API/eventsModel.dart';
@@ -125,31 +127,7 @@ class _HomePageState extends State<HomePage> {
                                   borderRadius: new BorderRadius.all(
                                       new Radius.circular(20.0))),
                               child: searchbar
-
-                              /*TextField(
-                                decoration: InputDecoration(hintText: "Search",
-                                  prefixIcon: Icon(Icons.search , color: c1,),
-                                  fillColor: Colors.white,focusColor: Colors.white,),
-                                cursorColor: Colors.white,
-                                onChanged: (String txt){
-                                  print(txt);
-                                  if(txt!="")
-                                  {
-                                    homeScreenList=eventsList.where((event)=> event.name.toLowerCase().contains(txt.toLowerCase())).toList();
-                                    setState(() {
-
-                                    });
-                                  }
-                                  else
-                                    homeScreenList=eventsList;
-                                  setState(() {
-
-                                  });
-
-
-
-                                },
-                              )*/,) ,
+                            ) ,
                           ),
                         ],
                       ),)),
@@ -189,7 +167,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   _loadTags(){
-    http.get(baseUrl+"api/tags").then((http.Response response){
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/tags",context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .onSuccess((http.Response response) async {
+
       tags = tagsListFromJson(response.body).data ;
       tags.removeWhere((tag)=> tag.count==0);
       _loadSuggestion();
@@ -197,31 +180,52 @@ class _HomePageState extends State<HomePage> {
 
       });
     });
+
+    httpBuilder.run();
+
   }
 
   _loadSuggestion(){
-    http.get(baseUrl+"api/search").then((http.Response response){
-      suggestions = searchSuggestionsFromJson(response.body).data ;
-        setState(() {
-          searchbar = _getSearchBar() ;
-        });
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/search",context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .headers({
+      "number_tags" : "4" ,
+      "number_events" : "4"
+    })
+        .onSuccess((http.Response response) async {
 
+      suggestions = searchSuggestionsFromJson(response.body).data ;
+      setState(() {
+        searchbar = _getSearchBar() ;
       });
+
+    });
+
+    httpBuilder.run();
 
   }
 
   _loadCategories(){
-    http.get(baseUrl+"api/events/categories",
-    headers: {
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/events/categories",context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .headers({
       "number_tags" : "4" ,
       "number_events" : "4"
-    }
-    ).then((http.Response response){
+    })
+        .onSuccess((http.Response response) async {
+
       eventCat = eventCategoriesFromJson(response.body).data ;
       setState(() {
 
       });
+
     });
+
+    httpBuilder.run();
+
   }
 
 
@@ -338,7 +342,14 @@ class _HomePageState extends State<HomePage> {
                   height: cardHeight,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image(
+                        image: AdvancedNetworkImage(
+                          e.imageLink,
+                          useDiskCache: true,
+                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                        ),
+                        fit: BoxFit.cover,
+                      ).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 
@@ -420,7 +431,14 @@ class _HomePageState extends State<HomePage> {
                   height: squareItemSize,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.cover, ),
+                      image: DecorationImage(image: Image(
+                        image: AdvancedNetworkImage(
+                          e.imageLink,
+                          useDiskCache: true,
+                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                        ),
+                        fit: BoxFit.cover,
+                      ).image ,fit: BoxFit.cover, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 
@@ -499,14 +517,15 @@ class _HomePageState extends State<HomePage> {
 
 
   void _loadEvents() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = await prefs.getString("token");
-    http.get(baseUrl+"api/events/lasts",
-    headers: {
-      "x-access-token":token ,
+
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/events/lasts",context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .headers({
       "count":5.toString()
-    }
-    ).then((http.Response response){
+    })
+        .onSuccess((http.Response response) async {
 
       print(response.body) ;
       setState(() {
@@ -515,7 +534,11 @@ class _HomePageState extends State<HomePage> {
         print(eventsList[0].name);
         homeScreenList=events.data;
       });
+
     });
+
+    httpBuilder.run();
+
   }
 
 Widget _getDrawer(){
@@ -647,7 +670,7 @@ return list ;
     });
   }
 
-  Future<List<Event>> showListofEvents(String title , Future<http.Response> resp){
+  void showListofEvents(String title , http.Response resp){
 
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => ListOfEvents(title,resp)));
@@ -655,19 +678,38 @@ return list ;
     }
 
   _getEventsByTag(String tagId,String tag){
-    var resp = http.get(baseUrl+"api/events/tag",headers: {
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/events/tag?tag="+tagId,context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .headers({
       "tag":tagId
-    }) ;
-    showListofEvents("Tag :"+tag, resp);
+    })
+        .onSuccess((http.Response response) async {
+
+      showListofEvents("Tag :"+tag, response);
+
+    });
+
+    httpBuilder.run();
+
   }
 
   void _getMoreLasts() {
-   var resp = http.get(baseUrl+"api/events/lasts",
-        headers: {
-          "count":"0"
-        }
-    );
-   showListofEvents("Lasts", resp);
+
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/events/lasts",context: context,showLoading: false);
+    httpBuilder
+        .getWithCache()
+        .headers({
+      "count":"0"
+    })
+        .onSuccess((http.Response response) async {
+
+      showListofEvents("Lasts", response);
+
+    });
+
+    httpBuilder.run();
 
   }
 

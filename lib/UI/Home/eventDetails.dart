@@ -5,6 +5,7 @@ import 'package:event_app/API/eventsModel.dart';
 import 'package:event_app/Const/colors.dart';
 import 'package:event_app/API/plansModel.dart';
 import 'package:event_app/API/socialLinksModel.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeline_list/timeline.dart';
 import 'package:timeline_list/timeline_model.dart';
@@ -78,7 +79,14 @@ class _EventDetailState extends State<EventDetail> {
                       child: Container(
                             decoration: new BoxDecoration(
                                 image: DecorationImage(
-                                    image:  Image.network("https://event-manager-red.herokuapp.com/"+"api/event/image?event="+e.id+"&rand="+DateTime.now().day.toString()).image,
+                                    image:  Image(
+                                      image: AdvancedNetworkImage(
+                                        e.imageLink,
+                                        useDiskCache: true,
+                                        cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ).image,
                                     fit: BoxFit.cover),
                                 borderRadius: new BorderRadius.all(
                                     new Radius.circular(20.0))),

@@ -1,6 +1,7 @@
 import 'package:event_app/Const/strings.dart';
 import 'package:event_app/UI/Home/eventDetails.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -10,7 +11,7 @@ import '../../API/eventsModel.dart';
 class ListOfEvents extends StatefulWidget {
 
   String title ;
-  Future<http.Response> resp ;
+  http.Response resp ;
 
   ListOfEvents(this.title, this.resp);
 
@@ -21,19 +22,17 @@ class ListOfEvents extends StatefulWidget {
 class _ListOfEventsState extends State<ListOfEvents> {
 
   String title ;
-  Future<http.Response> resp ;
+  http.Response resp ;
   List<Event> events = new List() ;
 
   _ListOfEventsState(this.title, this.resp);
 
   @override
   void initState() {
-    resp.then((http.Response res){
 
-    setState(() {
-      events=  eventsFromJson(res.body).data;
-    });
-    });
+      events=  eventsFromJson(resp.body).data;
+
+
     super.initState();
   }
 
@@ -80,7 +79,14 @@ class _ListOfEventsState extends State<ListOfEvents> {
                   height: card_height,
 
                   decoration: BoxDecoration(
-                      image: DecorationImage(image: Image.network(baseUrl+"api/event/image?event="+e.id).image ,fit: BoxFit.fitWidth, ),
+                      image: DecorationImage(image: Image(
+                        image: AdvancedNetworkImage(
+                          e.imageLink,
+                          useDiskCache: true,
+                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                        ),
+                        fit: BoxFit.cover,
+                      ).image ,fit: BoxFit.fitWidth, ),
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all( Radius.circular(8.0))
 

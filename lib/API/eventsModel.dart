@@ -37,6 +37,7 @@ class Event {
   String id;
   String name;
   String admin;
+  String imageLink;
   DateTime startDate;
   DateTime endDate;
   String description;
@@ -50,6 +51,7 @@ class Event {
     this.id,
     this.name,
     this.admin,
+    this.imageLink,
     this.startDate,
     this.endDate,
     this.description,
@@ -70,6 +72,7 @@ class Event {
     location: json["location"],
     createdAt: DateTime.parse(json["createdAt"]),
     updatedAt: DateTime.parse(json["updatedAt"]),
+    imageLink : json["imageLink"],
     v: json["__v"],
   );
 
@@ -84,6 +87,7 @@ class Event {
     "location": location,
     "createdAt": createdAt.toIso8601String(),
     "updatedAt": updatedAt.toIso8601String(),
+    "imageLink": imageLink  ,
     "__v": v,
   };
 }
