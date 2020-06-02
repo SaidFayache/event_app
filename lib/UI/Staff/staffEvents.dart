@@ -97,13 +97,14 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
                         ),
                       ),
                       onTap:(){
-                        _scan().then((val) {
+                        _scan().then((val) async{
+                          int s;
                           if(barcode !='')
                           {
                             print("barcode found :"+barcode);
                             if(!requests[e.id].requests.where((req)=> req.request.id.compareTo(barcode)==0).toList().isEmpty)
                             {RequestElement r=requests[e.id].requests.where((req)=> req.request.id.compareTo(barcode)==0).toList()[0];
-                            _createPopUp(context,r);
+                            await _createPopUp(context,r);
                             }
                             else
                             {
@@ -112,6 +113,7 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
                             }
 
                           }
+                          _getRequests(e.id);
                         });
 
                       } ,
@@ -159,6 +161,7 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
   }
   Future<void> _createPopUp(BuildContext context,RequestElement r)
   {
+    int val=0;
     return showDialog(
       context: context,
       builder: (context){
@@ -180,29 +183,103 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
                   child: Text("Ticket's Status : "+requestState[r.request.state]),
                 ),
                 Container(
-                    child: DropdownButton<String>(
-                      value: requestState[status],
-                      icon: Icon(Icons.arrow_downward),
-                      iconSize: 15,
-                      elevation: 16,
-                      underline: Container(
-                        height: 2,
-                        color: c1,
-                      ),
-                      onChanged: (String newValue) {
-                        setState(() {
-                          status=requestState.indexOf(newValue);
-                        });
+                    child:
+                    Column(
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          child:Text("Update Ticket status to :"),
+                        ),
+                        sendChoice(0, r,context),
+                        sendChoice(1, r,context),
+                        sendChoice(2, r,context),
+                        sendChoice(3, r,context),
+//                        ListTile(
+//                          title:  Text(requestState[0]),
+//                          leading: Radio(
+//                            value: 0,
+//                            groupValue: val,
+//                            onChanged: (int value) {
+//                              setState(() {
+//                                status = value;
+//                                val=value;
+//                              });
+//                              setState(() {
+//                                super.setState((){});
+//                              });
+//                            },
+//                          ),
+//                        ),
+//                        ListTile(
+//                          title:  Text(requestState[1]),
+//                          leading: Radio(
+//                            value: 1,
+//                            groupValue: val,
+//                            onChanged: (int value) {
+//                              setState(() {
+//                                status = value;
+//                                val=value;
+//                              });
+//                              setState(() {
+//                                super.setState((){});
+//                              });
+//                            },
+//                          ),
+//                        ),
+//                        ListTile(
+//                          title:  Text(requestState[2]),
+//                          leading: Radio(
+//                            value: 2,
+//                            groupValue: val,
+//                            onChanged: (int value) {
+//
+//                              setState(() {
+//                                super.setState((){
+//                                  status = value;
+//                                val=value;});
+//                              });
+//                            },
+//                          ),
+//                        ),
+//                        ListTile(
+//                          title:  Text(requestState[3]),
+//                          leading: Radio(
+//                            value: 3,
+//                            groupValue: val,
+//                            onChanged: (int value) {
+//                              setState(() {
+//                                status = value;
+//                                val=value;
+//                              });
+//                            },
+//                          ),
+//                        ),
 
-                      },
-                      items: requestState
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
+                      ],
                     )
+//                    DropdownButton<String>(
+//                      value: requestState[status],
+//                      icon: Icon(Icons.arrow_downward),
+//                      iconSize: 15,
+//                      elevation: 16,
+//                      underline: Container(
+//                        height: 2,
+//                        color: c1,
+//                      ),
+//                      onChanged: (String newValue) {
+//                        setState(() {
+//                          status=requestState.indexOf(newValue);
+//                        });
+//
+//                      },
+//                      items: requestState
+//                          .map<DropdownMenuItem<String>>((String value) {
+//                        return DropdownMenuItem<String>(
+//                          value: value,
+//                          child: Text(value),
+//                        );
+//                      }).toList(),
+//                    )
                 )
               ],
             ),
@@ -214,18 +291,45 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
                 Navigator.of(context).pop();
               },
             ),
-            MaterialButton(
-              child: Text("Submit"),
-              onPressed: (){
-                _updateRequest(r.request.id);
-                Navigator.of(context).pop();
-              },
-            )
+//            MaterialButton(
+//              child: Text("Submit"),
+//              onPressed: (){
+//                _updateRequest(r.request.id,this.context,r.request.event);
+//               // Navigator.of(context).pop();
+//              },
+//            )
           ],
         );
       },
 
     );
+  }
+  Widget sendChoice(int i,RequestElement r,BuildContext ctxt)
+  {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 5),
+      width: 150,
+      height: 50,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(color: c1,blurRadius: 5)
+          ]
+      ),
+      child: Card(
+        child: GestureDetector(
+          child: Center(child: Text(requestState[i])),
+          onTap: (){
+            setState(() {
+              status=i;
+            });
+            _updateRequest(r.request.id, context, r.request.event);
+          },
+        ),
+      ),
+    );
+
+
   }
   void _getEventsList() async
   {
@@ -271,18 +375,23 @@ class _StaffEventsPageState extends State<StaffEventsPage> {
     httpBuilder.run();
 
   }
-  void _updateRequest(String reqId,) async
+  void _updateRequest(String reqId,BuildContext ctxt,String eventId) async
   {
 
     String body = '{"id":"'+reqId+'","state":"'+status.toString()+'"}';
-    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: context,showLoading: false);
+    HttpBuilder httpBuilder = new HttpBuilder(url: "api/event/request",context: ctxt,showLoading: true);
     httpBuilder
         .put()
         .body(body)
         .headers({
       "Content-Type": "application/json",
     })
+        .showWarningAlert("Update", "Are you sure to update the ticket status to "+requestState[status]+" ?")
+        .showDefaultOnSuccessAlert("Success", "Status changed to "+requestState[status])
+        .showDefaultOnFailureAlert("Updating status error")
         .onSuccess((http.Response response) async {
+          _getRequests(eventId);
+          Navigator.of(ctxt).pop();
     });
 
     httpBuilder.run();
