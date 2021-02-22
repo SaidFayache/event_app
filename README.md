@@ -2,6 +2,8 @@
 
 A new Flutter application.
 
+[Backend repo](https://github.com/achreffaidi/EventManagerBackend)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
